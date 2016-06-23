@@ -30,3 +30,9 @@ class MapBasedEvaluationEngine(val values: Map[String, Any]) extends EvaluationE
     }
   }
 }
+
+object MapBasedEvaluationEngine {
+  def apply(values: Map[String, Any]): MapBasedEvaluationEngine = {
+    new MapBasedEvaluationEngine(values)
+  }
+}
