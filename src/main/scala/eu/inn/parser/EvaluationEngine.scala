@@ -1,12 +1,27 @@
 package eu.inn.parser
 
+import fastparse.core.Parsed
+
 trait EvaluationEngine {
+  import Parsers._
+
   def evaluate(expr: String): Any
 
   def treatAsValue(expr: String): Any = {
-    if (expr == "true") true
-    else if (expr == "false") false
-    else expr.replace("\"", "").replace("'", "")
+    var value: Option[Any] = None
+    bool.parse(expr) match {
+      case Parsed.Success(_,_) ⇒
+        value = Some(expr.toBoolean)
+      case _ ⇒
+    }
+
+    if (value.isEmpty)
+      digitsOnly.parse(expr) match {
+        case Parsed.Success(_,_) ⇒
+            value = Some(expr.toLong)
+        case _ ⇒
+      }
+    value getOrElse expr.replace("\"", "").replace("'", "")
   }
 }
 

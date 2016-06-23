@@ -1,12 +1,9 @@
 package eu.inn.parser
 
-import fastparse.all._
 import fastparse.core.Parsed
 
 object Ip {
-  val digits = P(CharIn('0' to '9').rep(min = 1, max = 4).!)
-  val ip = P(digits.rep(sep = ".", min = 4, max = 4).!)
-  val singleIp = P(ip.! ~ End)
+  import Parsers._
 
   def ipToLong(ip: String): Long = {
     var ipAddress: Long = 0
@@ -33,8 +30,7 @@ case class IpRange(from: Long, to: Long) {
 }
 
 object IpRange {
-  import Ip.ip
-  val ipRange = P(ip.rep.! ~ " ".? ~ "-" ~ " ".? ~ ip.rep.!)
+  import Parsers._
 
   def apply(from: String, to: String): IpRange = {
     IpRange(Ip.ipToLong(from), Ip.ipToLong(to))

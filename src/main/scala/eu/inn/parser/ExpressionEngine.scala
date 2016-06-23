@@ -40,7 +40,7 @@ class ExpressionEngine(evaluationEngine: EvaluationEngine) {
   }
 
   def eval(expr: String): Any = {
-    not.parse(expr) match {
+    Parsers.not.parse(expr) match {
       case Parsed.Success(parsedExpr, _) ⇒
         !eval(parsedExpr).asInstanceOf[Boolean]
       case Parsed.Failure(_, _, _) ⇒
@@ -58,22 +58,11 @@ class ExpressionEngine(evaluationEngine: EvaluationEngine) {
 }
 
 object ExpressionEngine {
-  val phrase = CharIn('a' to 'z', 'A' to 'Z', '0' to '9', "!", ".", "'", "\"", "=", "-", " ")
-  val wordWithDots = CharIn('a' to 'z', 'A' to 'Z', '0' to '9', "!", ".", "'", "\"", "-")
-
-  val or = P("(" ~ phrase.rep.! ~ ")" ~ " or " ~ AnyChar.rep.!)
-  val and = P("(" ~ phrase.rep.! ~ ")" ~ " and " ~ AnyChar.rep.!)
-  val eq = P("(".? ~ wordWithDots.rep.! ~ " ".? ~ "=" ~ " ".? ~ wordWithDots.rep.! ~ ")".?)
-  val nEq = P("(".? ~ wordWithDots.rep.! ~ " ".? ~ "!=" ~ " ".? ~ wordWithDots.rep.! ~ ")".?)
-  val has = P("(".? ~ wordWithDots.rep.! ~ " has " ~ wordWithDots.rep.! ~ ")".?)
-  val hasNot = P("(".? ~ wordWithDots.rep.! ~ " has not " ~ wordWithDots.rep.! ~ ")".?)
-  val in = P("(".? ~ wordWithDots.rep.! ~ " in " ~ "(".? ~ phrase.rep.! ~ ")".?)
-  val notIn = P("(".? ~ wordWithDots.rep.! ~ " not in " ~ "(".? ~ phrase.rep.! ~ ")".?)
-  val not = P("(".? ~ "!" ~ wordWithDots.rep.! ~ ")".?)
+  import Parsers._
 
   val orFunction = BooleanFunction(or, (a, b) ⇒ a.asInstanceOf[Boolean] || b.asInstanceOf[Boolean])
   val andFunction = BooleanFunction(and, (a,b) ⇒ a.asInstanceOf[Boolean] && b.asInstanceOf[Boolean])
-  val eqFunction = BooleanFunction(eq, (a, b) ⇒ a == b)
+  val eqFunction = BooleanFunction(Parsers.eq, (a, b) ⇒ a == b)
   val nEqFunction = BooleanFunction(nEq, (a, b) ⇒ a != b)
   val hasFunction = BooleanFunction(has, (a, b) ⇒ a.asInstanceOf[Seq[_]].contains(b))
   val hasNotFunction = BooleanFunction(hasNot, (a, b) ⇒ !a.asInstanceOf[Seq[_]].contains(b))
@@ -90,11 +79,34 @@ object ExpressionEngine {
   val notInFunction = BooleanFunction(notIn, (a, b) ⇒ !inFunction.op(a, b))
 
   val aggregationFunctions = Seq(andFunction, orFunction)
-  val simpleFunctions = Seq(eqFunction, nEqFunction, hasFunction, hasNotFunction, inFunction, notInFunction)
+  val simpleFunctions = Seq(nEqFunction, eqFunction, hasNotFunction, hasFunction, inFunction, notInFunction)
 
   def apply(evaluationEngine: EvaluationEngine): ExpressionEngine = {
     new ExpressionEngine(evaluationEngine)
   }
+}
+
+object Parsers {
+  val bool = P("true" | "false")
+  val digits = P(CharIn('0' to '9').rep)
+  val digitsOnly = P(CharIn('0' to '9').rep ~ End)
+  val phrase = CharIn('a' to 'z', 'A' to 'Z', '0' to '9', "!", ".", "'", "\"", "=", "-", " ")
+  val wordWithDots = CharIn('a' to 'z', 'A' to 'Z', '0' to '9', "!", ".", "'", "\"", "-")
+
+  val or = P("(" ~ phrase.rep.! ~ ")" ~ " or " ~ AnyChar.rep.!)
+  val and = P("(" ~ phrase.rep.! ~ ")" ~ " and " ~ AnyChar.rep.!)
+  val eq = P("(".? ~ wordWithDots.rep.! ~ " ".? ~ "=" ~ " ".? ~ wordWithDots.rep.! ~ ")".?)
+  val nEq = P("(".? ~ wordWithDots.rep.! ~ " ".? ~ "!=" ~ " ".? ~ wordWithDots.rep.! ~ ")".?)
+  val has = P("(".? ~ wordWithDots.rep.! ~ " has " ~ wordWithDots.rep.! ~ ")".?)
+  val hasNot = P("(".? ~ wordWithDots.rep.! ~ " has not " ~ wordWithDots.rep.! ~ ")".?)
+  val in = P("(".? ~ wordWithDots.rep.! ~ " in " ~ "(".? ~ phrase.rep.! ~ ")".?)
+  val notIn = P("(".? ~ wordWithDots.rep.! ~ " not in " ~ "(".? ~ phrase.rep.! ~ ")".rep.?)
+  val not = P("(".? ~ "!" ~ wordWithDots.rep.! ~ ")".?)
+
+  val ipOctet = P(digits.rep(min = 1, max = 4).!)
+  val ip = P(ipOctet.rep(sep = ".", min = 4, max = 4).!)
+  val singleIp = P(ip.! ~ End)
+  val ipRange = P(ip.rep.! ~ " ".? ~ "-" ~ " ".? ~ ip.rep.!)
 }
 
 case class BooleanFunction(parser: Parser[(String, String)], op: (Any, Any) ⇒ Boolean)
