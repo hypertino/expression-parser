@@ -64,8 +64,18 @@ object ExpressionEngine {
   val andFunction = BooleanFunction(and, (a,b) ⇒ a.asInstanceOf[Boolean] && b.asInstanceOf[Boolean])
   val eqFunction = BooleanFunction(Parsers.eq, (a, b) ⇒ a == b)
   val nEqFunction = BooleanFunction(nEq, (a, b) ⇒ a != b)
-  val hasFunction = BooleanFunction(has, (a, b) ⇒ a.asInstanceOf[Seq[_]].contains(b))
-  val hasNotFunction = BooleanFunction(hasNot, (a, b) ⇒ !a.asInstanceOf[Seq[_]].contains(b))
+  val hasFunction = BooleanFunction(has, (a, b) ⇒ {
+    if (a.isInstanceOf[Seq[_]])
+      a.asInstanceOf[Seq[_]].contains(b)
+    else
+      false
+  })
+  val hasNotFunction = BooleanFunction(hasNot, (a, b) ⇒ {
+    if (a.isInstanceOf[Seq[_]])
+      !a.asInstanceOf[Seq[_]].contains(b)
+    else
+      false
+  })
   val inFunction = BooleanFunction(in, (a, b) ⇒ {
     (a, b) match {
       case (ip: String, ipRange: IpRange) ⇒
@@ -73,7 +83,10 @@ object ExpressionEngine {
         val ipRange = b.asInstanceOf[IpRange]
         ipRange.contains(ip)
       case _ ⇒
-        b.asInstanceOf[Seq[_]].contains(a)
+        if (b.isInstanceOf[Seq[_]])
+          b.asInstanceOf[Seq[_]].contains(a)
+        else
+          false
     }
   })
   val notInFunction = BooleanFunction(notIn, (a, b) ⇒ !inFunction.op(a, b))

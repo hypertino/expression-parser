@@ -24,6 +24,7 @@ class ExpressionEngineTest extends FreeSpec with Matchers {
       exprEngine.parse("""user.roles has not "admin" """) shouldBe true
       exprEngine.parse("""user.bankAccounts has 26 """) shouldBe true
       exprEngine.parse("""user.bankAccounts has not 111111111111111111 """) shouldBe true
+      exprEngine.parse("""user.notExistingField has someValue """) shouldBe false
     }
 
     "complex expressions" in {
