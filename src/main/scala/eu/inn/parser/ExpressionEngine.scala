@@ -3,6 +3,7 @@ package eu.inn.parser
 import fastparse.all._
 
 class ExpressionEngine(evaluationEngine: EvaluationEngine) {
+
   import ExpressionEngine._
 
   def parse(ifExpression: String): Boolean = {
@@ -58,24 +59,29 @@ class ExpressionEngine(evaluationEngine: EvaluationEngine) {
 }
 
 object ExpressionEngine {
+
   import Parsers._
 
   val orFunction = BooleanFunction(or, (a, b) ⇒ a.asInstanceOf[Boolean] || b.asInstanceOf[Boolean])
-  val andFunction = BooleanFunction(and, (a,b) ⇒ a.asInstanceOf[Boolean] && b.asInstanceOf[Boolean])
-  val eqFunction = BooleanFunction(Parsers.eq, (a, b) ⇒ a == b)
-  val nEqFunction = BooleanFunction(nEq, (a, b) ⇒ a != b)
+  val andFunction = BooleanFunction(and, (a, b) ⇒ a.asInstanceOf[Boolean] && b.asInstanceOf[Boolean])
+
+  val eqFunction = BooleanFunction(Parsers.eq, (a, b) ⇒ {
+    a == b || a.toString == b.toString
+  })
+  val nEqFunction = BooleanFunction(nEq, (a, b) ⇒ {
+    !eqFunction.op(a, b)
+  })
+
   val hasFunction = BooleanFunction(has, (a, b) ⇒ {
-    if (a.isInstanceOf[Seq[_]])
-      a.asInstanceOf[Seq[_]].contains(b)
-    else
-      false
+    a match {
+      case seq: Seq[_] ⇒ seq.contains(b)
+      case _ ⇒ false
+    }
   })
   val hasNotFunction = BooleanFunction(hasNot, (a, b) ⇒ {
-    if (a.isInstanceOf[Seq[_]])
-      !a.asInstanceOf[Seq[_]].contains(b)
-    else
-      false
+    !hasFunction.op(a, b)
   })
+
   val inFunction = BooleanFunction(in, (a, b) ⇒ {
     (a, b) match {
       case (ip: String, ipRange: IpRange) ⇒
@@ -83,10 +89,10 @@ object ExpressionEngine {
         val ipRange = b.asInstanceOf[IpRange]
         ipRange.contains(ip)
       case _ ⇒
-        if (b.isInstanceOf[Seq[_]])
-          b.asInstanceOf[Seq[_]].contains(a)
-        else
-          false
+        b match {
+          case seq: Seq[_] ⇒ seq.contains(a)
+          case _ ⇒ false
+        }
     }
   })
   val notInFunction = BooleanFunction(notIn, (a, b) ⇒ !inFunction.op(a, b))

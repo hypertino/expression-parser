@@ -8,7 +8,8 @@ class ExpressionEngineTest extends FreeSpec with Matchers {
     "user" → Map(
       "isDefined" → true,
       "bankAccounts" → Seq(15, 26, Int.MaxValue + 100),
-      "roles" → Seq("dev", "qa", "ops")
+      "roles" → Seq("dev", "qa", "ops"),
+      "name" → "12345"
     )
   ))
   val exprEngine = new ExpressionEngine(evalEngine)
@@ -16,6 +17,7 @@ class ExpressionEngineTest extends FreeSpec with Matchers {
   "ExpressionEngine" - {
     "simple expressions" in {
       exprEngine.parse("user.isDefined") shouldBe true
+      exprEngine.parse("user.name = 12345") shouldBe true
       exprEngine.parse("!user.isDefined") shouldBe false
       exprEngine.parse("user.isDefined = true") shouldBe true
       exprEngine.parse("user.isDefined != true") shouldBe false
