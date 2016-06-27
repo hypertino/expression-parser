@@ -74,7 +74,9 @@ object ExpressionEngine {
 
   val hasFunction = BooleanFunction(has, (a, b) ⇒ {
     a match {
-      case seq: Seq[_] ⇒ seq.contains(b)
+      case seq: Seq[Any] ⇒ seq.contains(b)
+      case set: Set[Any] ⇒ set.contains(b)
+      case map: Map[Any, Any] ⇒ map.contains(b)
       case _ ⇒ false
     }
   })
@@ -90,7 +92,9 @@ object ExpressionEngine {
         ipRange.contains(ip)
       case _ ⇒
         b match {
-          case seq: Seq[_] ⇒ seq.contains(a)
+          case seq: Seq[Any] ⇒ seq.contains(a)
+          case set: Set[Any] ⇒ set.contains(a)
+          case map: Map[Any, Any] ⇒ map.contains(a)
           case _ ⇒ false
         }
     }
