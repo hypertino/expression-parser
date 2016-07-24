@@ -54,7 +54,7 @@ object Parsers {
   val identifier = P( identifierFirstChars ~/ (subIdentifier.rep(1) | identifierChars).rep ).!.map(AST.Identifier)
 
   val unaryOps = P("!") | "-"
-  val unaryExpression = P( unaryOps.! ~ expression ).map{case (l,r) ⇒ AST.UnaryOperation(l,r)}
+  val unaryExpression = P( unaryOps.! ~ expression ).map{case (op,r) ⇒ AST.UnaryOperation(AST.Identifier(op), r)}
 
   val binaryOps = P("+") | "-"
 
@@ -63,7 +63,7 @@ object Parsers {
     "in" | P("not" ~ space ~ "in") | "has" | P("has" ~ space ~ "not")*/
 
   val binaryExpression = P( expression ~ binaryOps.! ~ expression ).map { case(l,o,r) ⇒
-    AST.BinaryOperation(o, l, r)
+    AST.BinaryOperation(l, AST.Identifier(o), r)
   }
 
   val expression: P[AST.Expression] = binaryExpression | constExpression | identifier | unaryExpression
@@ -73,8 +73,8 @@ object AST {
   sealed trait Expression
   case class Identifier(name: String) extends Expression
   case class Const(value: Value) extends Expression
-  case class UnaryOperation(name: String, argument: Expression) extends Expression
-  case class BinaryOperation(name: String, leftArgument: Expression, rightArgument: Expression) extends Expression
+  case class UnaryOperation(op: Identifier, argument: Expression) extends Expression
+  case class BinaryOperation(leftArgument: Expression, op: Identifier, rightArgument: Expression) extends Expression
   case class Function(name: String, arguments: Expression) extends Expression
 }
 
@@ -118,13 +118,13 @@ class ETest extends FreeSpec with Matchers {
     }
 
     "unary expressions" in {
-      expression.parse("!abc") shouldBeSuccess UnaryOperation("!", Identifier("abc"))
-      expression.parse("!abc.xyz") shouldBeSuccess UnaryOperation("!", Identifier("abc.xyz"))
-      expression.parse("!true") shouldBeSuccess UnaryOperation("!", Const(True))
+      expression.parse("!abc") shouldBeSuccess UnaryOperation(Identifier("!"), Identifier("abc"))
+      expression.parse("!abc.xyz") shouldBeSuccess UnaryOperation(Identifier("!"), Identifier("abc.xyz"))
+      expression.parse("!true") shouldBeSuccess UnaryOperation(Identifier("!"), Const(True))
     }
 
     "binary expressions" in {
-      expression.parse("1+2") shouldBeSuccess BinaryOperation("+", Const(Number(1)), Const(Number(2)))
+      expression.parse("1+2") shouldBeSuccess BinaryOperation(Const(Number(1)), Identifier("+"), Const(Number(2)))
     }
   }
 }
