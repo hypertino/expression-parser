@@ -6,26 +6,26 @@ class ExpressionEngine(evaluationEngine: EvaluationEngine) {
 
   import ExpressionEngine._
 
-  def parse(ifExpression: String): Boolean = {
+  def evaluatePredicate(predicate: String): Boolean = {
     var result: Option[Boolean] = None
     aggregationFunctions.foreach { function ⇒
       if (result.isEmpty)
-        function.parser.parse(ifExpression) match {
+        function.parser.parse(predicate) match {
           case Parsed.Success((left, right), _) ⇒
-            result = Some(function.op(parse(left), parse(right)))
+            result = Some(function.op(evaluatePredicate(left), evaluatePredicate(right)))
           case Parsed.Failure(_, _, _) ⇒ // ignore
         }
     }
-    result getOrElse parseSimpleExpression(ifExpression)
+    result getOrElse evaluateSimplePredicate(predicate)
   }
 
-  def parseSimpleExpression(expr: String): Boolean = {
+  def evaluateSimplePredicate(predicate: String): Boolean = {
     var result: Option[Boolean] = None
     simpleFunctions.foreach { function ⇒
       if (result.isEmpty)
-        function.parser.parse(expr) match {
+        function.parser.parse(predicate) match {
           case Parsed.Success((left, right), _) ⇒
-            result = Some(function.op(eval(left), eval(right)))
+            result = Some(function.op(evaluate(left), evaluate(right)))
           case Parsed.Failure(_, _, _) ⇒ // ignore
         }
     }
@@ -33,17 +33,17 @@ class ExpressionEngine(evaluationEngine: EvaluationEngine) {
       case Some(value) ⇒
         value
       case None ⇒
-        eval(expr) match {
-          case expressionValue: Boolean ⇒ expressionValue
-          case _ ⇒ throw new IllegalArgumentException(s"Value of expression '$expr' is not of Boolean type, please check it and correct")
+        evaluate(predicate) match {
+          case boolResult: Boolean ⇒ boolResult
+          case _ ⇒ throw new IllegalArgumentException(s"Value of predicate '$predicate' is not of Boolean type, please check it and correct")
         }
     }
   }
 
-  def eval(expr: String): Any = {
+  def evaluate(expr: String): Any = {
     Parsers.not.parse(expr) match {
       case Parsed.Success(parsedExpr, _) ⇒
-        !eval(parsedExpr).asInstanceOf[Boolean]
+        !evaluate(parsedExpr).asInstanceOf[Boolean]
       case Parsed.Failure(_, _, _) ⇒
         if (Ip.isIp(expr))
           expr
