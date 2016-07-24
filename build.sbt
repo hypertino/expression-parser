@@ -8,12 +8,11 @@ scalaVersion := "2.11.8"
 
 libraryDependencies ++= Seq(
   "com.lihaoyi"    %% "fastparse"  % "0.3.7",
+  "eu.inn"         %% "binders-core" % "0.12.90",
   "org.scalatest"  %% "scalatest"  % "2.2.6"     % "test"
 )
 
 resolvers ++= Seq(
-  "Innova libs repo" at "http://repproxy.srv.inn.ru/artifactory/libs-release-local",
-  "Innova ext repo" at "http://repproxy.srv.inn.ru/artifactory/ext-release-local",
   Resolver.sonatypeRepo("public")
 )
 

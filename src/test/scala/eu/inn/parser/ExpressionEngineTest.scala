@@ -35,6 +35,7 @@ class ExpressionEngineTest extends FreeSpec with Matchers {
       exprEngine.parse("""(user.isDefined) or (user.roles has "qa")""") shouldBe true
       exprEngine.parse("""(!user.isDefined) or (user.roles has "qa")""") shouldBe true
       exprEngine.parse("""(!user.isDefined) or (user.roles has "admin")""") shouldBe false
+      //exprEngine.parseAll
     }
 
     "ip and ip range expressions" in {
