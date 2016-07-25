@@ -91,21 +91,39 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def SubIdent = rule { "." ~ IdentFirstChar ~ zeroOrMore(IdentChar) }
   def Ident = rule { capture( IdentFirstChar ~ zeroOrMore(IdentChar) ~ zeroOrMore(SubIdent) ) ~ WhiteSpace ~> AST.Identifier }
 
-  def UnaryOps = rule { capture ("!" | "-") ~ WhiteSpace ~> AST.Identifier }
+  def UnaryOps = rule { capture ( CharPredicate("!-~") ) ~ WhiteSpace ~> AST.Identifier }
 
-  def UnaryExpression = rule { UnaryOps ~ Expression ~> AST.UnaryOperation }
+  def UnaryExpression = rule { UnaryOps ~ (ConstExpression | Ident) ~> AST.UnaryOperation }
 
-  def BinaryOps = rule { capture ("+" | "-") ~ WhiteSpace ~> AST.Identifier }
+  // sorted by precedence
+  def BinaryOps = Vector(
+    rule { capture("|" | "||") ~ WhiteSpace ~> AST.Identifier },
+    rule { capture("^") ~ WhiteSpace ~> AST.Identifier },
+    rule { capture("&" | "&&") ~ WhiteSpace ~> AST.Identifier },
+    rule { capture("=" | "!=") ~ WhiteSpace ~> AST.Identifier },
+    rule { capture("<" | "<=" | ">" | ">=") ~ WhiteSpace ~> AST.Identifier },
+    rule { capture(":") ~ WhiteSpace ~> AST.Identifier },
+    rule { capture(CharPredicate("+-")) ~ WhiteSpace ~> AST.Identifier },
+    rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> AST.Identifier }
+  )
 
-  def BinaryExpression = rule { SingleExpression ~ BinaryOps ~ Expression ~> AST.BinaryOperation }
+  def BinaryExpression(index: Int): Rule1[AST.Expression] = {
+    if (index > 7)
+      SingleExpression
+    else rule {
+      BinaryExpression(index + 1) ~ zeroOrMore(
+        BinaryOps(index) ~ BinaryExpression(index + 1) ~> AST.BinaryOperation
+      )
+    }
+  }
 
   def ConstExpression = rule { Const ~> AST.Const }
 
-  def SingleExpression = rule { ConstExpression | Ident | UnaryExpression}
+  def ParensExpression = rule { '(' ~ Expression ~ ')' }
 
-  def Expression: Rule1[AST.Expression] = rule {
-    BinaryExpression | SingleExpression
-  }
+  def SingleExpression = rule { ConstExpression | Ident | UnaryExpression | ParensExpression }
+
+  def Expression: Rule1[AST.Expression] = BinaryExpression(0)
 
   def InputLine = rule { Expression ~ EOI }
 }
@@ -165,18 +183,42 @@ class PBTest extends FreeSpec with Matchers {
     "binary expressions" in {
       HParser("1+2").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("+"), AST.Const(bn.Number(2)))
       HParser("1+-2").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("+"), AST.Const(bn.Number(-2)))
-      HParser("1+2-3").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("+"),
-        AST.BinaryOperation(AST.Const(bn.Number(2)), AST.Identifier("-"), AST.Const(bn.Number(3)))
+      HParser("1+2-3").InputLine.run() shouldBeSuccess AST.BinaryOperation(
+        AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("+"),AST.Const(bn.Number(2))),
+        AST.Identifier("-"), AST.Const(bn.Number(3))
       )
+    }
 
-      /*
-        val parser = HParser("1 + 2")
-        parser.InputLine.run() match {
+    "binary operator precedence" in {
+      HParser("5+10*3").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(5)), AST.Identifier("+"),
+        AST.BinaryOperation(AST.Const(bn.Number(10)), AST.Identifier("*"), AST.Const(bn.Number(3)))
+      )
+      HParser("5*10+3").InputLine.run() shouldBeSuccess AST.BinaryOperation(
+        AST.BinaryOperation(AST.Const(bn.Number(5)), AST.Identifier("*"), AST.Const(bn.Number(10))),
+        AST.Identifier("+"), AST.Const(bn.Number(3))
+      )
+      HParser("5*10 - 3/4").InputLine.run() shouldBeSuccess AST.BinaryOperation(
+        AST.BinaryOperation(AST.Const(bn.Number(5)), AST.Identifier("*"), AST.Const(bn.Number(10))),
+        AST.Identifier("-"),
+        AST.BinaryOperation(AST.Const(bn.Number(3)), AST.Identifier("/"), AST.Const(bn.Number(4)))
+      )
+    }
+
+    "parens expression" in {
+      HParser("(5+10)*3").InputLine.run() shouldBeSuccess AST.BinaryOperation(
+        AST.BinaryOperation(AST.Const(bn.Number(5)), AST.Identifier("+"), AST.Const(bn.Number(10))),
+        AST.Identifier("*"), AST.Const(bn.Number(3))
+      )
+    }
+
+    /*"details" in {
+      val parser = HParser("1 + 2")
+      parser.InputLine.run() match {
         case Success(v) ⇒ println("ok")
         case Failure(e: ParseError) ⇒
           val errorMsg = parser.formatError(e, new ErrorFormatter(showTraces = true))
           println(errorMsg)
-      }*/
-    }
+      }
+    }*/
   }
 }
