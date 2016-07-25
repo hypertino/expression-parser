@@ -1,6 +1,8 @@
 # expession-parser
-
 Parses and tests if expression is true
+
+## TODO
++ HParser function
 
 ## Supported operations:
 "!, =, !=, and, or" - standard boolean operations 
