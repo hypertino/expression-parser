@@ -97,18 +97,19 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
 
   // sorted by precedence
   def BinaryOps = Vector(
-    rule { capture("|" | "||") ~ WhiteSpace ~> AST.Identifier },
-    rule { capture("^") ~ WhiteSpace ~> AST.Identifier },
-    rule { capture("&" | "&&") ~ WhiteSpace ~> AST.Identifier },
+    rule { capture("|" | "||" | "or") ~ WhiteSpace ~> AST.Identifier },
+    rule { capture("^" | "xor") ~ WhiteSpace ~> AST.Identifier },
+    rule { capture("&" | "&&" | "and") ~ WhiteSpace ~> AST.Identifier },
     rule { capture("=" | "!=") ~ WhiteSpace ~> AST.Identifier },
     rule { capture("<" | "<=" | ">" | ">=") ~ WhiteSpace ~> AST.Identifier },
-    rule { capture(":") ~ WhiteSpace ~> AST.Identifier },
+    rule { capture("hav") ~ WhiteSpace ~> AST.Identifier },
+    rule { capture("has") ~ WhiteSpace ~> AST.Identifier },
     rule { capture(CharPredicate("+-")) ~ WhiteSpace ~> AST.Identifier },
     rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> AST.Identifier }
   )
 
   def BinaryExpression(index: Int): Rule1[AST.Expression] = {
-    if (index > 7)
+    if (index > 8)
       SingleExpression
     else rule {
       BinaryExpression(index + 1) ~ zeroOrMore(
@@ -187,6 +188,9 @@ class PBTest extends FreeSpec with Matchers {
         AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("+"),AST.Const(bn.Number(2))),
         AST.Identifier("-"), AST.Const(bn.Number(3))
       )
+      //HParser("1 hav 2").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("hav"), AST.Const(bn.Number(2)))
+      HParser("1 has 2").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("hav"), AST.Const(bn.Number(2)))
+      //HParser("1 has 2").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("has"), AST.Const(bn.Number(2)))
     }
 
     "binary operator precedence" in {
