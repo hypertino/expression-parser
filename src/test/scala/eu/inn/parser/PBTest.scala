@@ -102,14 +102,15 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
     rule { capture("&" | "&&" | "and") ~ WhiteSpace ~> AST.Identifier },
     rule { capture("=" | "!=") ~ WhiteSpace ~> AST.Identifier },
     rule { capture("<" | "<=" | ">" | ">=") ~ WhiteSpace ~> AST.Identifier },
-    rule { capture("hav") ~ WhiteSpace ~> AST.Identifier },
-    rule { capture("has") ~ WhiteSpace ~> AST.Identifier },
+    rule {
+      { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~ WhiteSpace ~> (s ⇒ (AST.Identifier("has not"))) } |
+      { capture("has") ~ WhiteSpace ~> AST.Identifier } },
     rule { capture(CharPredicate("+-")) ~ WhiteSpace ~> AST.Identifier },
     rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> AST.Identifier }
   )
 
   def BinaryExpression(index: Int): Rule1[AST.Expression] = {
-    if (index > 8)
+    if (index > 7)
       SingleExpression
     else rule {
       BinaryExpression(index + 1) ~ zeroOrMore(
@@ -188,9 +189,10 @@ class PBTest extends FreeSpec with Matchers {
         AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("+"),AST.Const(bn.Number(2))),
         AST.Identifier("-"), AST.Const(bn.Number(3))
       )
-      //HParser("1 hav 2").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("hav"), AST.Const(bn.Number(2)))
-      HParser("1 has 2").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("hav"), AST.Const(bn.Number(2)))
-      //HParser("1 has 2").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("has"), AST.Const(bn.Number(2)))
+
+      HParser("1 has 2").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("has"), AST.Const(bn.Number(2)))
+      HParser("1 has not 2").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("has not"), AST.Const(bn.Number(2)))
+      HParser("1 has \t not 2").InputLine.run() shouldBeSuccess AST.BinaryOperation(AST.Const(bn.Number(1)), AST.Identifier("has not"), AST.Const(bn.Number(2)))
     }
 
     "binary operator precedence" in {
