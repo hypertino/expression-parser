@@ -6,7 +6,7 @@ import eu.inn.binders.value.Value
 import org.parboiled2.{CharPredicate, Parser, ParserInput, StringBuilding, _}
 import eu.inn.binders.{value ⇒ bn}
 import eu.inn.parser.ast._
-import eu.inn.parser.eval.{ASTPlayer, DefaultEvaluator}
+import eu.inn.parser.eval.{ASTPlayer, EvaluatorEngine}
 
 import scala.annotation.switch
 import scala.util.{Failure, Success}
@@ -118,7 +118,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
     rule {
       { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("has not")) } |
       { capture("has") ~ WhiteSpace ~> OpIdentifier _ } },
-    rule { capture(CharPredicate("+-")) ~ WhiteSpace ~> OpIdentifier _ },
+    rule { capture(CharPredicate("+-" | "++" | "--")) ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> OpIdentifier _ }
   )
 

@@ -6,7 +6,7 @@ import eu.inn.parser.eval._
 
 class HEval(val evaluator: EvaluatorAPI) extends ASTPlayer {
 
-  def this(contextAPI: ContextAPI) = this(new DefaultEvaluator {
+  def this(contextAPI: ContextAPI) = this(new EvaluatorEngine {
     override def context: ContextAPI = contextAPI
   })
 

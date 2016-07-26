@@ -2,6 +2,7 @@ package eu.inn.parser
 
 import eu.inn.binders.value.{Number, ObjV, Text}
 import eu.inn.binders.{value ⇒ bn}
+import eu.inn.parser.eval.EvalEntityNotFound
 import org.scalatest.{FreeSpec, Matchers}
 
 class HEvalTest extends FreeSpec with Matchers {

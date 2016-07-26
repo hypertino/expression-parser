@@ -1,7 +1,6 @@
 package eu.inn.parser.eval
 
 import eu.inn.binders.value.Value
-import eu.inn.parser.EvalEntityNotFound
 import eu.inn.parser.ast.Identifier
 
 trait EvaluatorAPI {
