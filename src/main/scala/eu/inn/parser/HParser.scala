@@ -103,7 +103,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def FuncArgs = rule { Expression ~ zeroOrMore(',' ~ Expression) ~> (Seq(_) ++ _)}
   def Func = rule { Ident ~ '(' ~ optional (FuncArgs) ~ ')' ~> {(i:Identifier,e:Option[Seq[Expression]]) ⇒ {eu.inn.parser.ast.Function(i,e.getOrElse(Seq.empty))}}}
 
-  def UnaryOps = rule { capture ( CharPredicate("!-~") ) ~ WhiteSpace ~> OpIdentifier _ }
+  def UnaryOps = rule { capture ( CharPredicate("!-") ) ~ WhiteSpace ~> OpIdentifier _ }
   def OpIdentifier(name: String) = Identifier(name)
 
   def UnaryExpression = rule { UnaryOps ~ (ConstExpression | Ident) ~> UnaryOperation }
@@ -118,7 +118,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
     rule {
       { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("has not")) } |
       { capture("has") ~ WhiteSpace ~> OpIdentifier _ } },
-    rule { capture(CharPredicate("+-" | "++" | "--")) ~ WhiteSpace ~> OpIdentifier _ },
+    rule { capture(CharPredicate("+-") | "++" | "--") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> OpIdentifier _ }
   )
 
