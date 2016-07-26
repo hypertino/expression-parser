@@ -1,17 +1,18 @@
 package eu.inn.parser.eval
 
 import eu.inn.binders.value.{Number, Value}
+import eu.inn.parser.ast.Identifier
 
-trait DefaultEvaluator extends EvaluatorApi {
-  override def binaryOperation(left: Value, operator: String, right: Value): Value = {
-    operator match {
+trait DefaultEvaluator extends EvaluatorAPI {
+  override def binaryOperation(left: Value, operator: Identifier, right: Value): Value = {
+    operator.segments.head match {
       case "+" ⇒ add(left, right)
       case "*" ⇒ mul(left, right)
       case _ ⇒ super.binaryOperation(left, operator, right)
     }
   }
 
-  override def unaryOperation(operator: String, argument: Value): Value = {
+  override def unaryOperation(operator: Identifier, argument: Value): Value = {
     super.unaryOperation(operator, argument)
   }
 

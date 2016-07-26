@@ -44,7 +44,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
 
   def Number = rule { HexNumber | DecNumber }
 
-  def HexNumber = rule { ignoreCase("0x") ~ clearSB() ~ capture(oneOrMore(HexDigit)) ~> (s ⇒ bn.Number(BigDecimal(new BigInteger(s, 16)))) ~ WhiteSpace }
+  def HexNumber = rule { ignoreCase("0x") ~ capture(oneOrMore(HexDigit)) ~> (s ⇒ bn.Number(BigDecimal(new BigInteger(s, 16)))) ~ WhiteSpace }
 
   def DecNumber = rule { capture(Integer ~ optional(Frac) ~ optional(Exp)) ~> (s ⇒ bn.Number(BigDecimal(s))) ~ WhiteSpace }
 
@@ -84,29 +84,42 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
 
   def ws(c: Char) = rule { c ~ WhiteSpace }
 
+  // Backtick escaped string, like `abc dfg` or `abc``dfg`
+  def TicCharacters = rule { zeroOrMore( (!'`' ~ ANY ~ appendSB()) | ("``" ~ appendSB('`'))) }
+  def TickString = rule { '`' ~ clearSB() ~ TicCharacters ~ ws('`') ~ push(sb.toString) }
+
   // identifiers
 
   def IdentFirstChar = CharPredicate.Alpha ++ CharPredicate("$_")
   def IdentChar = IdentFirstChar ++ CharPredicate.Digit
-  def SubIdent = rule { "." ~ IdentFirstChar ~ zeroOrMore(IdentChar) }
-  def Ident = rule { capture( IdentFirstChar ~ zeroOrMore(IdentChar) ~ zeroOrMore(SubIdent) ) ~ WhiteSpace ~> Identifier }
+  def IdentFirstSegment = rule { capture( IdentFirstChar ~ zeroOrMore(IdentChar)) }
+  def IdentFirstSegmentTic: Rule1[String] = rule { TickString }
+  def IdentSegmentTic: Rule1[String] = rule { '.' ~ WhiteSpace ~ TickString }
+  def IdentSegment = rule { "." ~ WhiteSpace ~ capture (IdentFirstChar ~ zeroOrMore(IdentChar)) }
+  def Ident = rule { (IdentFirstSegmentTic | IdentFirstSegment) ~ zeroOrMore(IdentSegmentTic | IdentSegment) ~ WhiteSpace ~> ConstructIdentifier _ }
 
-  def UnaryOps = rule { capture ( CharPredicate("!-~") ) ~ WhiteSpace ~> Identifier }
+  def ConstructIdentifier(firstSegment: String, subSegments: Seq[String]) = Identifier(Seq(firstSegment) ++ subSegments)
+
+  def FuncArgs = rule { Expression ~ zeroOrMore(',' ~ Expression) ~> (Seq(_) ++ _)}
+  def Func = rule { Ident ~ '(' ~ optional (FuncArgs) ~ ')' ~> {(i:Identifier,e:Option[Seq[Expression]]) ⇒ {eu.inn.parser.ast.Function(i,e.getOrElse(Seq.empty))}}}
+
+  def UnaryOps = rule { capture ( CharPredicate("!-~") ) ~ WhiteSpace ~> OpIdentifier _ }
+  def OpIdentifier(name: String) = Identifier(name)
 
   def UnaryExpression = rule { UnaryOps ~ (ConstExpression | Ident) ~> UnaryOperation }
 
   // sorted by precedence
   def BinaryOps = Vector(
-    rule { capture("|" | "||" | "or") ~ WhiteSpace ~> Identifier },
-    rule { capture("^" | "xor") ~ WhiteSpace ~> Identifier },
-    rule { capture("&" | "&&" | "and") ~ WhiteSpace ~> Identifier },
-    rule { capture("=" | "!=") ~ WhiteSpace ~> Identifier },
-    rule { capture("<" | "<=" | ">" | ">=") ~ WhiteSpace ~> Identifier },
+    rule { capture("or") ~ WhiteSpace ~> OpIdentifier _ },
+    rule { capture("xor") ~ WhiteSpace ~> OpIdentifier _ },
+    rule { capture("and") ~ WhiteSpace ~> OpIdentifier _ },
+    rule { capture("=" | "!=") ~ WhiteSpace ~> OpIdentifier _ },
+    rule { capture("<" | "<=" | ">" | ">=") ~ WhiteSpace ~> OpIdentifier _ },
     rule {
-      { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~ WhiteSpace ~> (s ⇒ (Identifier("has not"))) } |
-      { capture("has") ~ WhiteSpace ~> Identifier } },
-    rule { capture(CharPredicate("+-")) ~ WhiteSpace ~> Identifier },
-    rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> Identifier }
+      { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("has not")) } |
+      { capture("has") ~ WhiteSpace ~> OpIdentifier _ } },
+    rule { capture(CharPredicate("+-")) ~ WhiteSpace ~> OpIdentifier _ },
+    rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> OpIdentifier _ }
   )
 
   def BinaryExpression(index: Int): Rule1[Expression] = {
@@ -119,11 +132,11 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
     }
   }
 
-  def ConstExpression = rule { Literal ~> Const }
+  def ConstExpression = rule { Literal ~> Constant }
 
   def ParensExpression = rule { '(' ~ Expression ~ ')' }
 
-  def SingleExpression = rule { ConstExpression | Ident | UnaryExpression | ParensExpression }
+  def SingleExpression = rule { ConstExpression | Func | Ident | UnaryExpression | ParensExpression }
 
   def Expression: Rule1[Expression] = BinaryExpression(0)
 
@@ -135,7 +148,9 @@ object HParser {
   val QuoteBackslash = CharPredicate("\"\\")
   val QuoteSlashBackSlash = QuoteBackslash ++ "/"
 
-  def apply(input: ParserInput) = new HParser(input)
+  def apply(input: ParserInput): Expression = new HParser(input).InputLine.run().get
+
+  /*
   def eval(input: ParserInput): Value = {
     val parser = new HParser(input)
     parser.InputLine.run() match {
@@ -147,4 +162,5 @@ object HParser {
         throw t
     }
   }
+  */
 }
