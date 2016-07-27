@@ -101,7 +101,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def ConstructIdentifier(firstSegment: String, subSegments: Seq[String]) = Identifier(Seq(firstSegment) ++ subSegments)
 
   def FuncArgs = rule { Expression ~ zeroOrMore(',' ~ Expression) ~> (Seq(_) ++ _)}
-  def Func = rule { Ident ~ '(' ~ optional (FuncArgs) ~ ')' ~> {(i:Identifier,e:Option[Seq[Expression]]) ⇒ {eu.inn.parser.ast.Function(i,e.getOrElse(Seq.empty))}}}
+  def Func = rule { Ident ~ '(' ~ WhiteSpace ~ optional (FuncArgs) ~ ')' ~ WhiteSpace ~> {(i:Identifier,e:Option[Seq[Expression]]) ⇒ {eu.inn.parser.ast.Function(i,e.getOrElse(Seq.empty))}}}
 
   def UnaryOps = rule { capture ( CharPredicate("!-") ) ~ WhiteSpace ~> OpIdentifier _ }
   def OpIdentifier(name: String) = Identifier(name)
@@ -117,7 +117,10 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
     rule { capture("<" | "<=" | ">" | ">=") ~ WhiteSpace ~> OpIdentifier _ },
     rule {
       { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("has not")) } |
-      { capture("has") ~ WhiteSpace ~> OpIdentifier _ } },
+      { capture("has") ~ WhiteSpace ~> OpIdentifier _ } |
+      { capture("not" ~ oneOrMore(WhiteSpaceChar) ~ "like") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("not like")) } |
+      { capture("like") ~ WhiteSpace ~> OpIdentifier _ }
+    },
     rule { capture(CharPredicate("+-") | "++" | "--") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> OpIdentifier _ }
   )
@@ -134,9 +137,13 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
 
   def ConstExpression = rule { Literal ~> Constant }
 
-  def ParensExpression = rule { '(' ~ Expression ~ ')' }
+  def ParensExpression = rule { '(' ~ Expression ~ ')' ~ WhiteSpace }
 
-  def SingleExpression = rule { ConstExpression | Func | Ident | UnaryExpression | ParensExpression }
+  def ApplyExpression = rule { (ConstExpression | Func | Ident | UnaryExpression | ParensExpression) ~ '(' ~ Expression ~ ')' ~> ApplyFunction _ }
+
+  def ApplyFunction(left: Expression, right: Expression): Expression = Function(Identifier("apply"), Seq(left,right))
+
+  def SingleExpression: Rule1[Expression] = rule { WhiteSpace ~ (ApplyExpression | ConstExpression | Func | Ident | UnaryExpression | ParensExpression) }
 
   def Expression: Rule1[Expression] = BinaryExpression(0)
 
@@ -149,18 +156,4 @@ object HParser {
   val QuoteSlashBackSlash = QuoteBackslash ++ "/"
 
   def apply(input: ParserInput): Expression = new HParser(input).InputLine.run().get
-
-  /*
-  def eval(input: ParserInput): Value = {
-    val parser = new HParser(input)
-    parser.InputLine.run() match {
-      case Success(root) ⇒
-        val evaluator = new DefaultEvaluator with ASTPlayer {
-        }
-        evaluator.play(root)
-      case Failure(t) ⇒
-        throw t
-    }
-  }
-  */
 }

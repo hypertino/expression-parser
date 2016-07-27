@@ -3,8 +3,12 @@ package eu.inn.parser.eval
 import eu.inn.binders.value.{Null, Obj, Value}
 import eu.inn.parser.ast.Identifier
 
-case class ValueContext(obj: Obj) extends ContextAPI {
-  override def identifier(name: Identifier): Value = extractValue(obj, name.segments)
+case class ValueContext(obj: Obj) extends Context {
+  override def identifier = {
+    case identifier ⇒ extractValue(obj, identifier.segments)
+  }
+
+  override def function: PartialFunction[(Identifier, Seq[Value]), Value] = Map.empty
 
   private def extractValue(o: Obj, path: Seq[String]): Value = {
     if (path.tail.isEmpty) {

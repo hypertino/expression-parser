@@ -14,12 +14,12 @@ class HParserTest extends FreeSpec with Matchers {
       HParser("1e3") shouldBe Constant(bn.Number(1e3))
       HParser("12.8E3") shouldBe Constant(bn.Number(12.8E3))
       HParser("0xFF") shouldBe Constant(bn.Number(0xFF))
-      HParser("0X12") shouldBe Constant(bn.Number(0x12))
+      HParser("\n0X12") shouldBe Constant(bn.Number(0x12))
     }
 
     "bool" in {
       HParser("true") shouldBe Constant(bn.True)
-      HParser("false") shouldBe Constant(bn.False)
+      HParser("\nfalse") shouldBe Constant(bn.False)
     }
 
     "identifier" in {
@@ -66,7 +66,7 @@ class HParserTest extends FreeSpec with Matchers {
     }
 
     "parens expression" in {
-      HParser("(5+10)*3") shouldBe BinaryOperation(
+      HParser("\n(5+10)*3") shouldBe BinaryOperation(
         BinaryOperation(Constant(bn.Number(5)), Identifier("+"), Constant(bn.Number(10))),
         Identifier("*"), Constant(bn.Number(3))
       )
@@ -74,6 +74,9 @@ class HParserTest extends FreeSpec with Matchers {
 
     "function" in {
       HParser("test()") shouldBe Function(Identifier("test"),
+        Seq.empty
+      )
+      HParser("\ntest()\n") shouldBe Function(Identifier("test"),
         Seq.empty
       )
       HParser("test(1,2,3)") shouldBe Function(Identifier("test"),
