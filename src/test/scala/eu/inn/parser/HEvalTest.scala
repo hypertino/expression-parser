@@ -36,7 +36,8 @@ class HEvalTest extends FreeSpec with Matchers {
       HEval("5 > 6") shouldBe False
       HEval("[5,6,7] has 6") shouldBe True
       HEval("[5,6,7] has [6,8]") shouldBe False
-      HEval("[5,6,7] has [6]") shouldBe False
+      HEval("[5,6,7] has [6,7]") shouldBe True
+
       HEval("""
         "hello" has "el"
       """) shouldBe True

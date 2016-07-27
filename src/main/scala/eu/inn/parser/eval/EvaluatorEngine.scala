@@ -83,8 +83,13 @@ object EvaluatorEngine {
   def gteqBop(left: Value, right:Value) = left >= right
   def ltBop(left: Value, right:Value) = left < right
   def lteqBop(left: Value, right:Value) = left <= right
-  def hasBop(left: Value, right:Value) = left contains right
-  def hasNotBop(left: Value, right:Value) = !(left contains right)
+
+  def hasBop(left: Value, right:Value) = right match {
+    case Lst(seq) ⇒ seq.forall(left.contains)
+    case other ⇒ left.contains(other)
+  }
+
+  def hasNotBop(left: Value, right:Value) = !hasBop(left,right)
 
 
   def likeBop(left: Value, right:Value): Value = {
