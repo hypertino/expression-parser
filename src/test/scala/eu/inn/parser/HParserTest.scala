@@ -48,6 +48,9 @@ class HParserTest extends FreeSpec with Matchers {
       HParser("1 has 2") shouldBe BinaryOperation(Constant(bn.Number(1)), Identifier("has"), Constant(bn.Number(2)))
       HParser("1 has not 2") shouldBe BinaryOperation(Constant(bn.Number(1)), Identifier("has not"), Constant(bn.Number(2)))
       HParser("1 has \t not 2") shouldBe BinaryOperation(Constant(bn.Number(1)), Identifier("has not"), Constant(bn.Number(2)))
+
+      HParser("x <= 2") shouldBe BinaryOperation(Identifier("x"), Identifier("<="), Constant(bn.Number(2)))
+      HParser("2 >= y") shouldBe BinaryOperation(Constant(bn.Number(2)), Identifier(">="), Identifier("y"))
     }
 
     "binary operator precedence" in {

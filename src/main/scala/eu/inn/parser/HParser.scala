@@ -114,7 +114,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
     rule { capture("xor") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture("and") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture("=" | "!=") ~ WhiteSpace ~> OpIdentifier _ },
-    rule { capture("<" | "<=" | ">" | ">=") ~ WhiteSpace ~> OpIdentifier _ },
+    rule { capture("<=" | "<" | ">=" | ">") ~ WhiteSpace ~> OpIdentifier _ },
     rule {
       { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("has not")) } |
       { capture("has") ~ WhiteSpace ~> OpIdentifier _ } |
