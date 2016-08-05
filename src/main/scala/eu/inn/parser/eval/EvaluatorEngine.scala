@@ -1,6 +1,6 @@
 package eu.inn.parser.eval
 
-import eu.inn.binders.value.{Bool, Lst, Null, Number, Obj, Text, Value}
+import eu.inn.binders.value.{Bool, Lst, Obj, Text, Value}
 import eu.inn.parser.ast.Identifier
 
 import scala.util.matching.Regex
@@ -26,7 +26,9 @@ trait EvaluatorEngine extends Evaluator {
     "has" → EvaluatorEngine.hasBop,
     "has not" → EvaluatorEngine.hasNotBop,
     "like" → EvaluatorEngine.likeBop,
-    "not like" → EvaluatorEngine.notLikeBop
+    "not like" → EvaluatorEngine.notLikeBop,
+    "in" → EvaluatorEngine.inBop,
+    "not in" → EvaluatorEngine.notInBop
   )
 
   val unaryOperators = Map[String,Value ⇒ Value] (
@@ -84,20 +86,26 @@ object EvaluatorEngine {
   def ltBop(left: Value, right:Value) = left < right
   def lteqBop(left: Value, right:Value) = left <= right
 
-  def hasBop(left: Value, right:Value) = right match {
+  def hasBop(left: Value, right:Value): Boolean = right match {
     case Lst(seq) ⇒ seq.forall(left.contains)
     case other ⇒ left.contains(other)
   }
 
-  def hasNotBop(left: Value, right:Value) = !hasBop(left,right)
+  def hasNotBop(left: Value, right:Value): Boolean = !hasBop(left, right)
 
+  def inBop(left: Value, right:Value): Boolean = left match {
+      case Lst(seq) ⇒ seq.forall(right.contains)
+      case other ⇒ right.contains(other)
+  }
+
+  def notInBop(left: Value, right:Value): Boolean = !inBop(left, right)
 
   def likeBop(left: Value, right:Value): Value = {
     val r = new Regex(right.asString)
     r.findFirstIn(left.asString).isDefined
   }
 
-  def notLikeBop(left: Value, right:Value): Value = !likeBop(left,right)
+  def notLikeBop(left: Value, right:Value): Value = !likeBop(left, right)
 
   def minusUop(arg:Value) = -arg
   def invertUop(arg:Value) = !arg

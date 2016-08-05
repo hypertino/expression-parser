@@ -1,7 +1,6 @@
 package eu.inn.parser
 
 import eu.inn.binders.value.{False, LstV, Number, Obj, ObjV, Text, True, Value}
-import eu.inn.binders.{value ⇒ bn}
 import eu.inn.parser.ast.Identifier
 import eu.inn.parser.eval.{EvalEntityNotFound, ValueContext}
 import org.scalatest.{FreeSpec, Matchers}
@@ -37,6 +36,10 @@ class HEvalTest extends FreeSpec with Matchers {
       HEval("[5,6,7] has 6") shouldBe True
       HEval("[5,6,7] has [6,8]") shouldBe False
       HEval("[5,6,7] has [6,7]") shouldBe True
+      HEval("5 in [5,6,7]") shouldBe True
+      HEval("5 not in [5,6,7]") shouldBe False
+      HEval("5 in [6,7,8]") shouldBe False
+      HEval("5 not in [6,7,8]") shouldBe True
 
       HEval("""
         "hello" has "el"

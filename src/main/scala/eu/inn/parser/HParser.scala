@@ -2,14 +2,11 @@ package eu.inn.parser
 
 import java.math.BigInteger
 
-import eu.inn.binders.value.Value
-import org.parboiled2.{CharPredicate, Parser, ParserInput, StringBuilding, _}
 import eu.inn.binders.{value ⇒ bn}
 import eu.inn.parser.ast._
-import eu.inn.parser.eval.{ASTPlayer, EvaluatorEngine}
+import org.parboiled2.{CharPredicate, Parser, ParserInput, StringBuilding, _}
 
 import scala.annotation.switch
-import scala.util.{Failure, Success}
 
 class HParser(val input: ParserInput) extends Parser with StringBuilding {
   import CharPredicate.{Digit, Digit19, HexDigit}
@@ -18,7 +15,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def Literal = rule { WhiteSpace ~ Value }
 
   def Object: Rule1[bn.Obj] = rule {
-    ws('{') ~ zeroOrMore(Pair).separatedBy(ws(',')) ~ ws('}') ~> ((fields: Seq[(String,bn.Value)]) => bn.ObjV(fields :_*))
+    ws('{') ~ zeroOrMore(Pair).separatedBy(ws(',')) ~ ws('}') ~> ((fields: Seq[(String,bn.Value)]) ⇒ bn.ObjV(fields :_*))
   }
 
   def Pair = rule { StringUnwrapped ~ ws(':') ~ Value ~> ((_, _)) }
@@ -26,14 +23,14 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def Value: Rule1[bn.Value] = rule {
     run {
       (cursorChar: @switch) match {
-        case '"' => String
-        case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => Number
-        case '{' => Object
-        case '[' => List
-        case 't' => True
-        case 'f' => False
-        case 'n' => Null
-        case _ => MISMATCH
+        case '"' ⇒ String
+        case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' ⇒ Number
+        case '{' ⇒ Object
+        case '[' ⇒ List
+        case 't' ⇒ True
+        case 'f' ⇒ False
+        case 'n' ⇒ Null
+        case _ ⇒ MISMATCH
       }
     }
   }
@@ -61,7 +58,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
       | 'n' ~ appendSB('\n')
       | 'r' ~ appendSB('\r')
       | 't' ~ appendSB('\t')
-      | Unicode ~> { code => sb.append(code.asInstanceOf[Char]); () }
+      | Unicode ~> { code ⇒ sb.append(code.asInstanceOf[Char]); () }
   )
 
   def Unicode = rule { 'u' ~ capture(HexDigit ~ HexDigit ~ HexDigit ~ HexDigit) ~> (java.lang.Integer.parseInt(_, 16)) }
@@ -119,7 +116,9 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
       { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("has not")) } |
       { capture("has") ~ WhiteSpace ~> OpIdentifier _ } |
       { capture("not" ~ oneOrMore(WhiteSpaceChar) ~ "like") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("not like")) } |
-      { capture("like") ~ WhiteSpace ~> OpIdentifier _ }
+      { capture("like") ~ WhiteSpace ~> OpIdentifier _ } |
+      { capture("not" ~ oneOrMore(WhiteSpaceChar) ~ "in") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("not in")) } |
+      { capture("in") ~ WhiteSpace ~> OpIdentifier _ }
     },
     rule { capture(CharPredicate("+-") | "++" | "--") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> OpIdentifier _ }
