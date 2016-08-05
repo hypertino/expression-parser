@@ -57,7 +57,9 @@ class HEvalTest extends FreeSpec with Matchers {
     }
 
     "functions test" in {
+      HEval("!false") shouldBe True
       HEval("""isEmpty("")""") shouldBe True
+      // HEval("""!isEmpty("")""") shouldBe False //todo: uncomment when fixed
       HEval("""isEmpty("b")""") shouldBe False
       HEval("""isExists(a)""") shouldBe False
     }

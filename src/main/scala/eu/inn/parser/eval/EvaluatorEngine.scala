@@ -56,7 +56,7 @@ trait EvaluatorEngine extends Evaluator {
   }
 
   override def unaryOperation = {
-    case (i: Identifier, arg: Value) if i.segments.tail.isEmpty && binaryOperators.contains(i.segments.head) ⇒
+    case (i: Identifier, arg: Value) if i.segments.tail.isEmpty && unaryOperators.contains(i.segments.head) ⇒
       unaryOperators(i.segments.head)(arg)
   }
 
