@@ -54,15 +54,15 @@ trait ASTPlayer {
   }
 
   def unknownIdentifier(identifier: Identifier): Value = {
-    throw new EvalEntityNotFound(identifier.toString)
+    throw new EvalIdentifierNotFound(identifier.toString)
   }
   def unknownFunction(identifier: Identifier, arguments: Seq[Value]): Value = {
-    throw new EvalEntityNotFound(identifier.toString)
+    throw new EvalFunctionNotFound(identifier.toString)
   }
   def unknownBinaryOperation(left: Value, operator: Identifier, right: Value): Value = {
-    throw new EvalEntityNotFound(operator.toString)
+    throw new EvalBinaryOperationNotFound(operator.toString)
   }
   def unknownUnaryOperation(operator: Identifier, argument: Value): Value = {
-    throw new EvalEntityNotFound(operator.toString)
+    throw new EvalUnaryOperationNotFound(operator.toString)
   }
 }

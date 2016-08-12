@@ -2,7 +2,7 @@ package eu.inn.parser
 
 import eu.inn.binders.value.{False, LstV, Number, Obj, ObjV, Text, True, Value}
 import eu.inn.parser.ast.Identifier
-import eu.inn.parser.eval.{EvalEntityNotFound, ValueContext}
+import eu.inn.parser.eval.{EvalEntityNotFound, EvalFunctionNotFound, EvalIdentifierNotFound, ValueContext}
 import org.scalatest.{FreeSpec, Matchers}
 
 class HEvalTest extends FreeSpec with Matchers {
@@ -19,7 +19,7 @@ class HEvalTest extends FreeSpec with Matchers {
     }
 
     "math with variables that doesn't exists" in {
-      intercept[EvalEntityNotFound]{
+      intercept[EvalIdentifierNotFound]{
         HEval("4*x+3*2")
       }
     }
@@ -94,6 +94,12 @@ class HEvalTest extends FreeSpec with Matchers {
       }
 
       HEval("""pow(2,8)""", context) shouldBe Number(256)
+    }
+
+    "math with function that doesn't exists" in {
+      intercept[EvalFunctionNotFound]{
+        HEval("pow(2,8)")
+      }
     }
   }
 }
