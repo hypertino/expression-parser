@@ -116,9 +116,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
       { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("has not")) } |
       { capture("has") ~ WhiteSpace ~> OpIdentifier _ } |
       { capture("not" ~ oneOrMore(WhiteSpaceChar) ~ "like") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("not like")) } |
-      { capture("like") ~ WhiteSpace ~> OpIdentifier _ } |
-      { capture("not" ~ oneOrMore(WhiteSpaceChar) ~ "in") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("not in")) } |
-      { capture("in") ~ WhiteSpace ~> OpIdentifier _ }
+      { capture("like") ~ WhiteSpace ~> OpIdentifier _ }
     },
     rule { capture(CharPredicate("+-") | "++" | "--") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> OpIdentifier _ }

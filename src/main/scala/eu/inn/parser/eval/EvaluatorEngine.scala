@@ -6,7 +6,7 @@ import eu.inn.parser.ast.Identifier
 import scala.util.matching.Regex
 
 trait EvaluatorEngine extends Evaluator {
-  val binaryOperators = Map[String,(Value,Value) ⇒ Value] (
+  val binaryOperators = Map[String,((Value,Value) ⇒ Value)] (
     "+" → EvaluatorEngine.addBop,
     "-" → EvaluatorEngine.subBop,
     "*" → EvaluatorEngine.mulBop,
@@ -26,9 +26,7 @@ trait EvaluatorEngine extends Evaluator {
     "has" → EvaluatorEngine.hasBop,
     "has not" → EvaluatorEngine.hasNotBop,
     "like" → EvaluatorEngine.likeBop,
-    "not like" → EvaluatorEngine.notLikeBop,
-    "in" → EvaluatorEngine.inBop,
-    "not in" → EvaluatorEngine.notInBop
+    "not like" → EvaluatorEngine.notLikeBop
   )
 
   val unaryOperators = Map[String,Value ⇒ Value] (
@@ -86,19 +84,21 @@ object EvaluatorEngine {
   def ltBop(left: Value, right:Value) = left < right
   def lteqBop(left: Value, right:Value) = left <= right
 
-  def hasBop(left: Value, right:Value): Boolean = right match {
-    case Lst(seq) ⇒ seq.forall(left.contains)
-    case other ⇒ left.contains(other)
+  def hasBop(left: Value, right:Value): Boolean = (left, right) match {
+    case (Text(lStr), Text(rStr)) ⇒
+      IpParser.rangeContainsIp(lStr, rStr) match {
+        case Some(answer) ⇒
+          answer
+        case None ⇒
+          left.contains(right)
+      }
+    case (_, Lst(seq)) ⇒
+      seq.forall(left.contains)
+    case (_, _) ⇒
+      left.contains(right)
   }
 
   def hasNotBop(left: Value, right:Value): Boolean = !hasBop(left, right)
-
-  def inBop(left: Value, right:Value): Boolean = left match {
-      case Lst(seq) ⇒ seq.forall(right.contains)
-      case other ⇒ right.contains(other)
-  }
-
-  def notInBop(left: Value, right:Value): Boolean = !inBop(left, right)
 
   def likeBop(left: Value, right:Value): Value = {
     val r = new Regex(right.asString)

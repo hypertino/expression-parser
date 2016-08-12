@@ -7,9 +7,11 @@ version := "0.1"
 scalaVersion := "2.11.8"
 
 libraryDependencies ++= Seq(
-  "eu.inn"         %% "binders-core" % "0.12.93",
-  "org.parboiled"  %% "parboiled" % "2.1.3",
-  "org.scalatest"  %% "scalatest"  % "2.2.6"     % "test"
+  "eu.inn"          %% "binders-core"   % "0.12.93",
+  "ch.qos.logback"  % "logback-classic" % "1.1.2",
+  "ch.qos.logback"  % "logback-core"    % "1.1.2",
+  "org.parboiled"   %% "parboiled"      % "2.1.3",
+  "org.scalatest"   %% "scalatest"      % "2.2.6"     % "test"
 )
 
 resolvers ++= Seq(

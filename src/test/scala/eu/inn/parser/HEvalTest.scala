@@ -36,10 +36,10 @@ class HEvalTest extends FreeSpec with Matchers {
       HEval("[5,6,7] has 6") shouldBe True
       HEval("[5,6,7] has [6,8]") shouldBe False
       HEval("[5,6,7] has [6,7]") shouldBe True
-      HEval("5 in [5,6,7]") shouldBe True
-      HEval("5 not in [5,6,7]") shouldBe False
-      HEval("5 in [6,7,8]") shouldBe False
-      HEval("5 not in [6,7,8]") shouldBe True
+      HEval(""""127.0.0.0/24" has "127.0.0.1"""") shouldBe True
+      HEval(""""127.0.0.0/24" has "126.0.0.1"""") shouldBe False
+      HEval(""""127.0.0.1 - 128.0.0.1" has "127.0.0.1"""") shouldBe True
+      HEval(""""127.0.0.1 - 128.0.0.1" has "126.0.0.1"""") shouldBe False
 
       HEval("""
         "hello" has "el"
