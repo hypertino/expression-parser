@@ -16,8 +16,8 @@ class IpParser(val input: ParserInput) extends Parser {
   private def IpRangeByFromTo = rule { capture(IpRule) ~ WhiteSpace ~ '-' ~ WhiteSpace ~ capture(IpRule) ~> ((from, to) ⇒ (from, to)) }
   private def IpRangeBySubnet = rule { (capture(IpRule) ~ WhiteSpace ~ '/' ~ WhiteSpace ~ capture((1 to 2).times(Digit))) ~> ((subnet, mask) ⇒ (subnet, mask)) }
 
-  def IpInputLine = rule { IpAddress ~ EOI }
-  def IpRangeInputLine = rule { (IpRangeByFromTo | IpRangeBySubnet) ~ EOI }
+  private def IpInputLine = rule { IpAddress ~ EOI }
+  private def IpRangeInputLine = rule { (IpRangeByFromTo | IpRangeBySubnet) ~ EOI }
 }
 
 object IpParser {

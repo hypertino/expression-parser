@@ -7,6 +7,7 @@ import eu.inn.parser.ast._
 import org.parboiled2.{CharPredicate, Parser, ParserInput, StringBuilding, _}
 
 import scala.annotation.switch
+import scala.util.Try
 
 class HParser(val input: ParserInput) extends Parser with StringBuilding {
   import CharPredicate.{Digit, Digit19, HexDigit}
@@ -152,5 +153,5 @@ object HParser {
   val QuoteBackslash = CharPredicate("\"\\")
   val QuoteSlashBackSlash = QuoteBackslash ++ "/"
 
-  def apply(input: ParserInput): Expression = new HParser(input).InputLine.run().get
+  def apply(input: ParserInput): Try[Expression] = new HParser(input).InputLine.run()
 }
