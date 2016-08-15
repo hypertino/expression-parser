@@ -9,6 +9,9 @@ case class ValueContext(obj: Obj) extends Context {
   }
 
   override def function: PartialFunction[(Identifier, Seq[Value]), Value] = Map.empty
+  override def unaryOperation: PartialFunction[(Identifier, Value), Value] = Map.empty
+  override def binaryOperation: PartialFunction[(Value, Identifier, Value), Value] = Map.empty
+  override def customOperators = Seq.empty[String]
 
   private def extractValue(o: Obj, path: Seq[String]): Value = {
     if (path.tail.isEmpty) {

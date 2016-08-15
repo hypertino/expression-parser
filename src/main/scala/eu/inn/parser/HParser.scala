@@ -9,9 +9,11 @@ import org.parboiled2.{CharPredicate, Parser, ParserInput, StringBuilding, _}
 import scala.annotation.switch
 import scala.util.Try
 
-class HParser(val input: ParserInput) extends Parser with StringBuilding {
+abstract class HParser(val input: ParserInput) extends Parser with StringBuilding {
   import CharPredicate.{Digit, Digit19, HexDigit}
   import HParser._
+
+  def customOperators: Vector[Rule1[Identifier]]
 
   def Literal = rule { WhiteSpace ~ Value }
 
@@ -107,7 +109,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def UnaryExpression = rule { UnaryOps ~ (ConstExpression | Ident) ~> UnaryOperation }
 
   // sorted by precedence
-  def BinaryOps = Vector(
+  def BinaryOps = customOperators ++ Vector(
     rule { capture("or") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture("xor") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture("and") ~ WhiteSpace ~> OpIdentifier _ },
@@ -153,5 +155,15 @@ object HParser {
   val QuoteBackslash = CharPredicate("\"\\")
   val QuoteSlashBackSlash = QuoteBackslash ++ "/"
 
-  def apply(input: ParserInput): Try[Expression] = new HParser(input).InputLine.run()
+  def apply(input: ParserInput): Try[Expression] = new HParser(input) {
+    override def customOperators = Vector.empty
+  }.InputLine.run()
+
+  def apply(input: ParserInput, operators: Seq[String]): Try[Expression] = new HParser(input) {
+    override def customOperators = {
+      operators.foldLeft(Vector.newBuilder[Rule1[Identifier]]) { (ops, op) ⇒
+        ops += rule { capture(op) ~ WhiteSpace ~> OpIdentifier _ }
+      }.result()
+    }
+  }.InputLine.run()
 }

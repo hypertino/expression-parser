@@ -1,8 +1,8 @@
 package eu.inn.parser
 
-import eu.inn.binders.value.{False, LstV, Number, Obj, ObjV, Text, True, Value}
+import eu.inn.binders.value.{Bool, False, LstV, Number, Obj, ObjV, Text, True, Value}
 import eu.inn.parser.ast.Identifier
-import eu.inn.parser.eval.{EvalEntityNotFound, ValueContext}
+import eu.inn.parser.eval.{EvalEntityNotFound, IpParser, ValueContext}
 import org.scalatest.{FreeSpec, Matchers}
 
 class HEvalTest extends FreeSpec with Matchers {
@@ -34,12 +34,9 @@ class HEvalTest extends FreeSpec with Matchers {
       HEval("10 > 3").get shouldBe True
       HEval("5 > 6").get shouldBe False
       HEval("[5,6,7] has 6").get shouldBe True
+      HEval("[5,6,7] has 8").get shouldBe False
       HEval("[5,6,7] has [6,8]").get shouldBe False
       HEval("[5,6,7] has [6,7]").get shouldBe True
-      HEval(""""127.0.0.0/24" has "127.0.0.1"""").get shouldBe True
-      HEval(""""127.0.0.0/24" has "126.0.0.1"""").get shouldBe False
-      HEval(""""127.0.0.1 - 128.0.0.1" has "127.0.0.1"""").get shouldBe True
-      HEval(""""127.0.0.1 - 128.0.0.1" has "126.0.0.1"""").get shouldBe False
 
       HEval("""
         "hello" has "el"
@@ -94,6 +91,26 @@ class HEvalTest extends FreeSpec with Matchers {
       }
 
       HEval("""pow(2,8)""", context).get shouldBe Number(256)
+    }
+
+    "custom operation test" in {
+      val context = new ValueContext(Obj.empty) {
+        override def binaryOperation: PartialFunction[(Value, Identifier, Value), Value] = {
+          case (Text(ip), Identifier(Seq("in range")), Text(range)) ⇒
+            IpParser.rangeContainsIp(range, ip) match {
+              case Some(answer) ⇒
+                Bool(answer)
+              case None ⇒
+                False
+            }
+        }
+
+        override def customOperators = Seq("in range")
+      }
+      HEval(""""127.0.0.1" in range "127.0.0.0/24"""", context).get shouldBe True
+      HEval(""""126.0.0.1" in range "127.0.0.0/24"""", context).get shouldBe False
+      HEval(""""127.0.0.1" in range "127.0.0.1 - 128.0.0.1"""", context).get shouldBe True
+      HEval(""""126.0.0.1" in range "127.0.0.1 - 128.0.0.1"""", context).get shouldBe False
     }
   }
 }
