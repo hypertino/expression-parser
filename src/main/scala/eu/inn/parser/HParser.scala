@@ -9,9 +9,11 @@ import org.parboiled2.{CharPredicate, Parser, ParserInput, StringBuilding, _}
 import scala.annotation.switch
 import scala.util.Try
 
-class HParser(val input: ParserInput) extends Parser with StringBuilding {
+abstract class HParser(val input: ParserInput) extends Parser with StringBuilding {
   import CharPredicate.{Digit, Digit19, HexDigit}
   import HParser._
+
+  def customOperators: Vector[Rule1[Identifier]]
 
   def Literal = rule { WhiteSpace ~ Value }
 
@@ -118,13 +120,17 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
       { capture("has") ~ WhiteSpace ~> OpIdentifier _ } |
       { capture("not" ~ oneOrMore(WhiteSpaceChar) ~ "like") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("not like")) } |
       { capture("like") ~ WhiteSpace ~> OpIdentifier _ }
-    },
+    }
+
+  ) ++ customOperators ++ Vector(
     rule { capture(CharPredicate("+-") | "++" | "--") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> OpIdentifier _ }
   )
 
+  def binaryOpsSize = 7 + customOperators.length
+
   def BinaryExpression(index: Int): Rule1[Expression] = {
-    if (index > 7)
+    if (index > binaryOpsSize)
       SingleExpression
     else rule {
       BinaryExpression(index + 1) ~ zeroOrMore(
@@ -153,5 +159,29 @@ object HParser {
   val QuoteBackslash = CharPredicate("\"\\")
   val QuoteSlashBackSlash = QuoteBackslash ++ "/"
 
-  def apply(input: ParserInput): Try[Expression] = new HParser(input).InputLine.run()
+  def apply(input: ParserInput): Try[Expression] = new HParser(input) {
+    override def customOperators = Vector.empty
+  }.InputLine.run()
+
+  def apply(input: ParserInput, operators: Seq[String]): Try[Expression] = new HParser(input) {
+    override def customOperators = {
+      operators.foldLeft(Vector.newBuilder[Rule1[Identifier]]) { (ops, op) ⇒
+        val opByWhiteSpaces = op.split(" ")
+        val normalOpBuilder = StringBuilder.newBuilder
+        var isFirst = true
+        val operationRule = opByWhiteSpaces.foldLeft(WhiteSpace) { (currentRule, segment) ⇒
+          if (isFirst) {
+            isFirst = false
+            normalOpBuilder.append(segment)
+            rule { currentRule ~ segment }
+          } else {
+            normalOpBuilder.append(" " + segment)
+            rule { currentRule ~ oneOrMore(WhiteSpaceChar) ~ segment }
+          }
+        }
+        val normalizedOp = normalOpBuilder.toString()
+        ops += rule { capture(operationRule) ~ WhiteSpace ~> ((_:String) ⇒ Identifier(normalizedOp)) }
+      }.result()
+    }
+  }.InputLine.run()
 }

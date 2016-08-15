@@ -25,10 +25,6 @@ package object ast {
     def isSafeChar(c: Char) = c.isDigit || isSafeFirstChar(c)
     def isSafeIdentifierSegment(segment: String) = isSafeFirstChar(segment.head) && segment.tail.forall(isSafeChar)
 
-    def parse(s: String): Identifier = {
-      new HParser(s).Ident.run().get
-    }
-
     def apply(s: String): Identifier = Identifier(Seq(s))
   }
 }
