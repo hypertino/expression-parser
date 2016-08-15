@@ -84,18 +84,9 @@ object EvaluatorEngine {
   def ltBop(left: Value, right:Value) = left < right
   def lteqBop(left: Value, right:Value) = left <= right
 
-  def hasBop(left: Value, right:Value): Boolean = (left, right) match {
-//    case (Text(lStr), Text(rStr)) ⇒
-//      IpParser.rangeContainsIp(lStr, rStr) match {
-//        case Some(answer) ⇒
-//          answer
-//        case None ⇒
-//          left.contains(right)
-//      }
-    case (_, Lst(seq)) ⇒
-      seq.forall(left.contains)
-    case _ ⇒
-      left.contains(right)
+  def hasBop(left: Value, right:Value): Boolean = right match {
+    case Lst(seq) ⇒ seq.forall(left.contains)
+    case other ⇒ left.contains(other)
   }
 
   def hasNotBop(left: Value, right:Value): Boolean = !hasBop(left, right)
