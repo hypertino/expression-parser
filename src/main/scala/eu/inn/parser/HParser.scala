@@ -109,7 +109,7 @@ abstract class HParser(val input: ParserInput) extends Parser with StringBuildin
   def UnaryExpression = rule { UnaryOps ~ (ConstExpression | Ident) ~> UnaryOperation }
 
   // sorted by precedence
-  def BinaryOps = customOperators ++ Vector(
+  def BinaryOps = Vector(
     rule { capture("or") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture("xor") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture("and") ~ WhiteSpace ~> OpIdentifier _ },
@@ -123,7 +123,7 @@ abstract class HParser(val input: ParserInput) extends Parser with StringBuildin
     },
     rule { capture(CharPredicate("+-") | "++" | "--") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> OpIdentifier _ }
-  )
+  ) ++ customOperators
 
   def BinaryExpression(index: Int): Rule1[Expression] = {
     if (index > 7)
