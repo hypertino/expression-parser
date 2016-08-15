@@ -2,7 +2,7 @@ package eu.inn.parser
 
 import eu.inn.binders.value.{False, LstV, Number, Obj, ObjV, Text, True, Value}
 import eu.inn.parser.ast.Identifier
-import eu.inn.parser.eval.{EvalEntityNotFound, EvalFunctionNotFound, EvalIdentifierNotFound, ValueContext}
+import eu.inn.parser.eval.{EvalEntityNotFound, EvalFunctionNotFound, ValueContext}
 import org.scalatest.{FreeSpec, Matchers}
 
 class HEvalTest extends FreeSpec with Matchers {
@@ -34,12 +34,9 @@ class HEvalTest extends FreeSpec with Matchers {
       HEval("10 > 3").get shouldBe True
       HEval("5 > 6").get shouldBe False
       HEval("[5,6,7] has 6").get shouldBe True
+      HEval("[5,6,7] has 8").get shouldBe False
       HEval("[5,6,7] has [6,8]").get shouldBe False
       HEval("[5,6,7] has [6,7]").get shouldBe True
-      HEval(""""127.0.0.0/24" has "127.0.0.1"""").get shouldBe True
-      HEval(""""127.0.0.0/24" has "126.0.0.1"""").get shouldBe False
-      HEval(""""127.0.0.1 - 128.0.0.1" has "127.0.0.1"""").get shouldBe True
-      HEval(""""127.0.0.1 - 128.0.0.1" has "126.0.0.1"""").get shouldBe False
 
       HEval("""
         "hello" has "el"
