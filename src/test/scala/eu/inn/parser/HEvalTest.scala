@@ -96,7 +96,7 @@ class HEvalTest extends FreeSpec with Matchers {
     "custom operation test" in {
       val context = new ValueContext(Obj.empty) {
         override def binaryOperation: PartialFunction[(Value, Identifier, Value), Value] = {
-          case (Text(ip), Identifier(Seq("in range")), Text(range)) ⇒
+          case (Text(ip), Identifier(Seq("ip matches")), Text(range)) ⇒
             IpParser.rangeContainsIp(range, ip) match {
               case Some(answer) ⇒
                 Bool(answer)
@@ -105,12 +105,12 @@ class HEvalTest extends FreeSpec with Matchers {
             }
         }
 
-        override def customOperators = Seq("in range")
+        override def customOperators = Seq("ip matches")
       }
-      HEval(""""127.0.0.1" in range "127.0.0.0/24"""", context).get shouldBe True
-      HEval(""""126.0.0.1" in range "127.0.0.0/24"""", context).get shouldBe False
-      HEval(""""127.0.0.1" in range "127.0.0.1 - 128.0.0.1"""", context).get shouldBe True
-      HEval(""""126.0.0.1" in range "127.0.0.1 - 128.0.0.1"""", context).get shouldBe False
+      HEval(""""127.0.0.1" ip matches "127.0.0.0/24"""", context).get shouldBe True
+      HEval(""""126.0.0.1" ip matches "127.0.0.0/24"""", context).get shouldBe False
+      HEval(""""127.0.0.1" ip matches "127.0.0.1 - 128.0.0.1"""", context).get shouldBe True
+      HEval(""""126.0.0.1" ip matches "127.0.0.1 - 128.0.0.1"""", context).get shouldBe False
     }
   }
 }

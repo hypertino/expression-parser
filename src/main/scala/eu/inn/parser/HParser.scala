@@ -120,13 +120,17 @@ abstract class HParser(val input: ParserInput) extends Parser with StringBuildin
       { capture("has") ~ WhiteSpace ~> OpIdentifier _ } |
       { capture("not" ~ oneOrMore(WhiteSpaceChar) ~ "like") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("not like")) } |
       { capture("like") ~ WhiteSpace ~> OpIdentifier _ }
-    },
+    }
+
+  ) ++ customOperators ++ Vector(
     rule { capture(CharPredicate("+-") | "++" | "--") ~ WhiteSpace ~> OpIdentifier _ },
     rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> OpIdentifier _ }
-  ) ++ customOperators
+  )
+
+  def binaryOpsSize = 7 + customOperators.length
 
   def BinaryExpression(index: Int): Rule1[Expression] = {
-    if (index > 7)
+    if (index > binaryOpsSize)
       SingleExpression
     else rule {
       BinaryExpression(index + 1) ~ zeroOrMore(
@@ -162,7 +166,21 @@ object HParser {
   def apply(input: ParserInput, operators: Seq[String]): Try[Expression] = new HParser(input) {
     override def customOperators = {
       operators.foldLeft(Vector.newBuilder[Rule1[Identifier]]) { (ops, op) ⇒
-        ops += rule { capture(op) ~ WhiteSpace ~> OpIdentifier _ }
+        val opByWhiteSpaces = op.split(" ")
+        val normalOpBuilder = StringBuilder.newBuilder
+        var isFirst = true
+        val operationRule = opByWhiteSpaces.foldLeft(WhiteSpace) { (currentRule, segment) ⇒
+          if (isFirst) {
+            isFirst = false
+            normalOpBuilder.append(segment)
+            rule { currentRule ~ segment }
+          } else {
+            normalOpBuilder.append(" " + segment)
+            rule { currentRule ~ oneOrMore(WhiteSpaceChar) ~ segment }
+          }
+        }
+        val normalizedOp = normalOpBuilder.toString()
+        ops += rule { capture(operationRule) ~ WhiteSpace ~> ((_:String) ⇒ Identifier(normalizedOp)) }
       }.result()
     }
   }.InputLine.run()
