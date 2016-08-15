@@ -15,7 +15,7 @@ class HEval(val evaluator: Evaluator) extends ASTPlayer {
   def this() = this(EmptyContext)
 
   def eval(expression: Expression): Value = super.play(expression)
-  def eval(expression: String): Try[Value] = HParser(expression) match {
+  def eval(expression: String): Try[Value] = HParser(expression, evaluator.customOperators) match {
     case Success(parsedExpression) ⇒ Success(eval(parsedExpression))
     case Failure(ex) ⇒ Failure(ex)
   }
