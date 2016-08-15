@@ -1,9 +1,8 @@
 package eu.inn.parser
 
-import eu.inn.binders.value.{Bool, False, LstV, Number, Obj, ObjV, Text, True, Value}
+import eu.inn.binders.value.{False, LstV, Number, Obj, ObjV, Text, True, Value}
 import eu.inn.parser.ast.Identifier
-import eu.inn.parser.eval.{EvalEntityNotFound, EvalFunctionNotFound, EvalIdentifierNotFound, ValueContext}
-import eu.inn.parser.eval.{EvalEntityNotFound, IpParser, ValueContext}
+import eu.inn.parser.eval.{EvalEntityNotFound, EvalFunctionNotFound, ValueContext}
 import org.scalatest.{FreeSpec, Matchers}
 
 class HEvalTest extends FreeSpec with Matchers {
@@ -98,26 +97,6 @@ class HEvalTest extends FreeSpec with Matchers {
       intercept[EvalFunctionNotFound]{
         HEval("pow(2,8)")
       }
-    }
-
-    "custom operation test" in {
-      val context = new ValueContext(Obj.empty) {
-        override def binaryOperation: PartialFunction[(Value, Identifier, Value), Value] = {
-          case (Text(ip), Identifier(Seq("ip matches")), Text(range)) ⇒
-            IpParser.rangeContainsIp(range, ip) match {
-              case Some(answer) ⇒
-                Bool(answer)
-              case None ⇒
-                False
-            }
-        }
-
-        override def customOperators = Seq("ip matches")
-      }
-      HEval(""""127.0.0.1" ip matches "127.0.0.0/24"""", context).get shouldBe True
-      HEval(""""126.0.0.1" ip matches "127.0.0.0/24"""", context).get shouldBe False
-      HEval(""""127.0.0.1" ip matches "127.0.0.1 - 128.0.0.1"""", context).get shouldBe True
-      HEval(""""126.0.0.1" ip matches "127.0.0.1 - 128.0.0.1"""", context).get shouldBe False
     }
   }
 }

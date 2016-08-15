@@ -167,20 +167,16 @@ object HParser {
     override def customOperators = {
       operators.foldLeft(Vector.newBuilder[Rule1[Identifier]]) { (ops, op) ⇒
         val opByWhiteSpaces = op.split(" ")
-        val normalOpBuilder = StringBuilder.newBuilder
         var isFirst = true
         val operationRule = opByWhiteSpaces.foldLeft(WhiteSpace) { (currentRule, segment) ⇒
           if (isFirst) {
             isFirst = false
-            normalOpBuilder.append(segment)
             rule { currentRule ~ segment }
           } else {
-            normalOpBuilder.append(" " + segment)
             rule { currentRule ~ oneOrMore(WhiteSpaceChar) ~ segment }
           }
         }
-        val normalizedOp = normalOpBuilder.toString()
-        ops += rule { capture(operationRule) ~ WhiteSpace ~> ((_:String) ⇒ Identifier(normalizedOp)) }
+        ops += rule { capture(operationRule) ~ WhiteSpace ~> ((_:String) ⇒ Identifier(op)) }
       }.result()
     }
   }.InputLine.run()
