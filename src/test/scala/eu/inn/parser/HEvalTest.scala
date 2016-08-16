@@ -32,6 +32,7 @@ class HEvalTest extends FreeSpec with Matchers {
 
     "bool logic" in {
       HEval("10 > 3").get shouldBe True
+      HEval("10 > 3 and 3 > 2").get shouldBe True
       HEval("5 > 6").get shouldBe False
       HEval("[5,6,7] has 6").get shouldBe True
       HEval("[5,6,7] has 8").get shouldBe False
