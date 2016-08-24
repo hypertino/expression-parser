@@ -106,7 +106,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def UnaryOps = rule { capture ( CharPredicate("!-") ) ~ WhiteSpace ~> OpIdentifier _ }
   def OpIdentifier(name: String) = Identifier(name)
 
-  def UnaryExpression = rule { UnaryOps ~ (ConstExpression | Ident) ~> UnaryOperation }
+  def UnaryExpression = rule { UnaryOps ~ Expression ~> UnaryOperation }
 
   // sorted by precedence
   def BinaryOps = Vector(
@@ -143,11 +143,11 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
 
   def ParensExpression = rule { '(' ~ Expression ~ ')' ~ WhiteSpace }
 
-  def ApplyExpression = rule { (ConstExpression | Func | Ident | UnaryExpression | ParensExpression) ~ '(' ~ Expression ~ ')' ~> ApplyFunction _ }
+  //def ApplyExpression = rule { (ConstExpression | Func | UnaryExpression | ParensExpression) ~ '(' ~ Expression ~ ')' ~> ApplyFunction _ }
 
-  def ApplyFunction(left: Expression, right: Expression): Expression = Function(Identifier("apply"), Seq(left,right))
+  //def ApplyFunction(left: Expression, right: Expression): Expression = Function(Identifier("apply"), Seq(left,right))
 
-  def SingleExpression: Rule1[Expression] = rule { WhiteSpace ~ (ApplyExpression | ConstExpression | Func | Ident | UnaryExpression | ParensExpression) ~ WhiteSpace }
+  def SingleExpression: Rule1[Expression] = rule { WhiteSpace ~ (/*ApplyExpression | */ConstExpression | Func | Ident | UnaryExpression | ParensExpression) ~ WhiteSpace }
 
   def Expression: Rule1[Expression] = BinaryExpression(0)
 

@@ -35,6 +35,8 @@ class HParserTest extends FreeSpec with Matchers {
       HParser("!abc").get shouldBe UnaryOperation(Identifier("!"), Identifier("abc"))
       HParser("!abc.xyz").get shouldBe UnaryOperation(Identifier("!"), Identifier(Seq("abc","xyz")))
       HParser("!true").get shouldBe UnaryOperation(Identifier("!"), Constant(bn.True))
+      HParser("!(false)").get shouldBe UnaryOperation(Identifier("!"), Constant(bn.False))
+      HParser("!isEmpty(\"\")").get shouldBe UnaryOperation(Identifier("!"),Function(Identifier("isEmpty"),List(Constant(Text("")))))
     }
 
     "binary expressions" in {
@@ -56,6 +58,17 @@ class HParserTest extends FreeSpec with Matchers {
     "multiple binary expressions" in {
       HParser("id > \"10\" or x < 5").get shouldBe BinaryOperation(BinaryOperation(Identifier("id"),Identifier(">"),Constant(Text("10"))),Identifier("or"),BinaryOperation(Identifier("x"),Identifier("<"),Constant(Number(5))))
     }
+
+    /*"apply precedence" in {
+      val parser = new HParser("""!(true)""")
+      parser.InputLine.run() match {
+        case Failure(e: ParseError) ⇒
+          val errorMsg = parser.formatError(e, new ErrorFormatter(showTraces = true, traceCutOff = 320))
+          println(errorMsg)
+        case other ⇒
+          println(other)
+      }
+    }*/
 
     "binary operator precedence" in {
       HParser("5+10*3").get shouldBe BinaryOperation(Constant(bn.Number(5)), Identifier("+"),
