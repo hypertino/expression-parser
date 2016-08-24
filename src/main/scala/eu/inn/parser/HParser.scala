@@ -9,11 +9,11 @@ import org.parboiled2.{CharPredicate, Parser, ParserInput, StringBuilding, _}
 import scala.annotation.switch
 import scala.util.Try
 
-abstract class HParser(val input: ParserInput) extends Parser with StringBuilding {
+class HParser(val input: ParserInput) extends Parser with StringBuilding {
   import CharPredicate.{Digit, Digit19, HexDigit}
   import HParser._
 
-  def customOperators: Vector[Rule1[Identifier]]
+  def customOperators: Vector[Rule1[Identifier]] = Vector.empty
 
   def Literal = rule { WhiteSpace ~ Value }
 
@@ -110,21 +110,21 @@ abstract class HParser(val input: ParserInput) extends Parser with StringBuildin
 
   // sorted by precedence
   def BinaryOps = Vector(
-    rule { capture("or") ~ WhiteSpace ~> OpIdentifier _ },
-    rule { capture("xor") ~ WhiteSpace ~> OpIdentifier _ },
-    rule { capture("and") ~ WhiteSpace ~> OpIdentifier _ },
-    rule { capture("=" | "!=") ~ WhiteSpace ~> OpIdentifier _ },
-    rule { capture("<=" | "<" | ">=" | ">") ~ WhiteSpace ~> OpIdentifier _ },
+    rule { capture("or") ~> OpIdentifier _ },
+    rule { capture("xor") ~> OpIdentifier _ },
+    rule { capture("and") ~> OpIdentifier _ },
+    rule { capture("=" | "!=") ~> OpIdentifier _ },
+    rule { capture("<=" | "<" | ">=" | ">") ~> OpIdentifier _ },
     rule {
-      { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("has not")) } |
-      { capture("has") ~ WhiteSpace ~> OpIdentifier _ } |
-      { capture("not" ~ oneOrMore(WhiteSpaceChar) ~ "like") ~ WhiteSpace ~> (_ ⇒ OpIdentifier("not like")) } |
-      { capture("like") ~ WhiteSpace ~> OpIdentifier _ }
+      { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~> (_ ⇒ OpIdentifier("has not")) } |
+      { capture("has") ~> OpIdentifier _ } |
+      { capture("not" ~ oneOrMore(WhiteSpaceChar) ~ "like") ~> (_ ⇒ OpIdentifier("not like")) } |
+      { capture("like") ~> OpIdentifier _ }
     }
 
   ) ++ customOperators ++ Vector(
-    rule { capture(CharPredicate("+-") | "++" | "--") ~ WhiteSpace ~> OpIdentifier _ },
-    rule { capture(CharPredicate("*/%")) ~ WhiteSpace ~> OpIdentifier _ }
+    rule { capture(CharPredicate("+-") | "++" | "--") ~> OpIdentifier _ },
+    rule { capture(CharPredicate("*/%")) ~> OpIdentifier _ }
   )
 
   def binaryOpsSize = 7 + customOperators.length
@@ -134,7 +134,7 @@ abstract class HParser(val input: ParserInput) extends Parser with StringBuildin
       SingleExpression
     else rule {
       BinaryExpression(index + 1) ~ zeroOrMore(
-        BinaryOps(index) ~ BinaryExpression(index + 1) ~> BinaryOperation
+        WhiteSpace ~ BinaryOps(index) ~ WhiteSpace ~ BinaryExpression(index + 1) ~> BinaryOperation
       )
     }
   }
@@ -147,7 +147,7 @@ abstract class HParser(val input: ParserInput) extends Parser with StringBuildin
 
   def ApplyFunction(left: Expression, right: Expression): Expression = Function(Identifier("apply"), Seq(left,right))
 
-  def SingleExpression: Rule1[Expression] = rule { WhiteSpace ~ (ApplyExpression | ConstExpression | Func | Ident | UnaryExpression | ParensExpression) }
+  def SingleExpression: Rule1[Expression] = rule { WhiteSpace ~ (ApplyExpression | ConstExpression | Func | Ident | UnaryExpression | ParensExpression) ~ WhiteSpace }
 
   def Expression: Rule1[Expression] = BinaryExpression(0)
 
@@ -159,9 +159,7 @@ object HParser {
   val QuoteBackslash = CharPredicate("\"\\")
   val QuoteSlashBackSlash = QuoteBackslash ++ "/"
 
-  def apply(input: ParserInput): Try[Expression] = new HParser(input) {
-    override def customOperators = Vector.empty
-  }.InputLine.run()
+  def apply(input: ParserInput): Try[Expression] = new HParser(input).InputLine.run()
 
   def apply(input: ParserInput, operators: Seq[String]): Try[Expression] = new HParser(input) {
     override def customOperators = {

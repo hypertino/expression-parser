@@ -3,13 +3,10 @@ package eu.inn.parser
 import eu.inn.binders.value.{Obj, Value}
 import eu.inn.parser.ast.Expression
 import eu.inn.parser.eval._
-import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
 
 class HEval(val evaluator: Evaluator) extends ASTPlayer {
-  val log = LoggerFactory.getLogger(getClass)
-
   def this(context: Context) = this(new EvaluatorEngineWithContext(context))
   def this(contextValue: Obj) = this(ValueContext(contextValue))
   def this() = this(EmptyContext)

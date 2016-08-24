@@ -1,6 +1,6 @@
 package eu.inn.parser
 
-import eu.inn.binders.value.Text
+import eu.inn.binders.value.{Number, Text}
 import eu.inn.binders.{value ⇒ bn}
 import org.scalatest.{FreeSpec, Matchers}
 
@@ -51,6 +51,10 @@ class HParserTest extends FreeSpec with Matchers {
 
       HParser("x <= 2").get shouldBe BinaryOperation(Identifier("x"), Identifier("<="), Constant(bn.Number(2)))
       HParser("2 >= y").get shouldBe BinaryOperation(Constant(bn.Number(2)), Identifier(">="), Identifier("y"))
+    }
+
+    "multiple binary expressions" in {
+      HParser("id > \"10\" or x < 5").get shouldBe BinaryOperation(BinaryOperation(Identifier("id"),Identifier(">"),Constant(Text("10"))),Identifier("or"),BinaryOperation(Identifier("x"),Identifier("<"),Constant(Number(5))))
     }
 
     "binary operator precedence" in {
