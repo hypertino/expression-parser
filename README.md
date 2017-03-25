@@ -1,63 +1,93 @@
-# expression-parser
- Parses and evaluates expression
+[![Build Status](https://travis-ci.org/hypertino/expression-parser.svg)](https://travis-ci.org/hypertino/expression-parser)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.hypertino/binders_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.hypertino/expression-parser_2.12)
+
+# About
+This is a ready to use expression parser and evaluator for Scala powered by `parboiled2`.
+
+Example:
+
+```scala
+val result = HEval("4*5+3*2").toInt
+// result = 26
+```
+
+It's possible to provide a context with variables to the parser:
+
+```scala
+val context = Obj.from("user" → Obj.from("count" → 10))
+val result = HEval("4*user.count+1*2", context).toInt
+// result = 42
+```
+
+You also can add your own functions into the context:
+
+```scala
+val context = new ValueContext(Obj.empty) {
+    override def function: PartialFunction[(Identifier, Seq[Value]), Value] = {
+        case (Identifier(Seq("pow")), args) ⇒ args.head.toBigDecimal.pow(args.tail.head.toInt)
+    }
+}
+
+val result = HEval("pow(2,8)", context).toInt
+// result = 256
+```
 
 ## TODO
  + HParser function
 
-## Supported operations: 
- "+, -, *, /" - standard arithmetical operations
+## Built-in operators 
+ `+, -, *, /` - arithmetical operations
  
- "!, =, !=, and, or, xor" - standard boolean operations
+ `!, =, !=, and, or, xor` - boolean operations
  
- "%" - remainder (modulus) operation
+ `%` - remainder (modulus) operation
  
- ">, <, >=, <=" - comparison operations
+ `>, <, >=, <=` - comparison operations
  
- "someObject.someField" - evaluate value of 'someField' of 'someObject'
+ `someObject.someField` - evaluate value of 'someField' of 'someObject'
  
- "has, has not" - tests if collection has (or has not) specified element 
+ `has, has not` - tests if collection has (or has not) specified element 
  
- "like, not like" - tests if value matches regexp
+ `like, not like` - tests if value matches regexp
  
- "++" - adds one collection to another
+ `++` - adds one collection to another
  
- "--" - computes difference between two collections
+ `--` - computes difference between two collections
 
-## Supported functions:
- "case" - takes two arguments: index and collection. Returns value placed in collection with specified index
+## Built-in functions
+ `case` - takes two arguments: index and collection. Returns value placed in collection with specified index
  
- "isEmpty" - tests whether value is empty
+ `isEmpty` - tests whether value is empty
  
- "isExists" - tests whether value is present in context
+ `isExists` - tests whether value is present in context
  
- "length" - returns length of collection or string. Boolean argument is a special case: function returns '1' in case of 'true' and '0' in case of 'false'
+ `length` - returns length of collection or string. Boolean argument is a special case: function returns '1' in case of 'true' and '0' in case of 'false'
  
- "upper, lower" - returns string in upper or lower case
+ `upper, lower` - returns string in upper or lower case
  
- "split" - takes two arguments: string and separator and returns collection made by splitting of incoming string by specified separator
+ `split` - takes two arguments: string and separator and returns collection made by splitting of incoming string by specified separator
  
- "indexOf" - takes two arguments: string and substring. Returns the index within this string of the first occurrence of the specified substring
+ `indexOf` - takes two arguments: string and substring. Returns the index within this string of the first occurrence of the specified substring
  
- "substr" - takes 2 or 3 arguments: string, beginIndex[, endIndex] - returns substring of string
+ `substr` - takes 2 or 3 arguments: string, beginIndex[, endIndex] - returns substring of string
  
- "compareIgnoreCase" - compares two strings ignoring their case
+ `compareIgnoreCase` - compares two strings ignoring their case
 
-## Values representation:
+## Context field access
  1. Values of fields of some object should be dot-separated:
  ```scala
  user.field.subField
  ```
 
- 2. Strings can be written with or without quotes of apostrophes:
+ 2. Strings can be written with quotes of apostrophes (later ignores escapes):
  ```scala
- someString
- 'someString'
- "someString"
+ 'someString\nabcde' // escaping ignored
+ "someString\nSecondLine" // newline inserted
  ```
 
  3. Numbers should be written as is, without any additional symbols
 
-## Examples:
+## Other Examples (TODO)
  ```scala
  user.isDefined
  !user.isDefined

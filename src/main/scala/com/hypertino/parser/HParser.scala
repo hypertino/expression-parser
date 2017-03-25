@@ -7,7 +7,9 @@ import com.hypertino.parser.ast._
 import org.parboiled2.{CharPredicate, Parser, ParserInput, StringBuilding, _}
 
 import scala.annotation.switch
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
+
+case class HParseError(message: String, cause: Throwable) extends RuntimeException(message, cause)
 
 class HParser(val input: ParserInput) extends Parser with StringBuilding {
   import CharPredicate.{Digit, Digit19, HexDigit}
@@ -27,6 +29,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
     run {
       (cursorChar: @switch) match {
         case '"' ⇒ String
+        case ''' ⇒ StringNoEscapes
         case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' ⇒ Number
         case '{' ⇒ Object
         case '[' ⇒ List
@@ -40,7 +43,11 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
 
   def String = rule { StringUnwrapped ~> bn.Text }
 
+  def StringNoEscapes = rule { StringUnwrappedNoEscapes ~> bn.Text }
+
   def StringUnwrapped = rule { '"' ~ clearSB() ~ Characters ~ ws('"') ~ push(sb.toString) }
+
+  def StringUnwrappedNoEscapes = rule { ''' ~ clearSB() ~ zeroOrMore(CharExceptApostrophe) ~ ws(''') ~ push(sb.toString) }
 
   def Number = rule { HexNumber | DecNumber }
 
@@ -53,6 +60,8 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def Characters = rule { zeroOrMore(NormalChar | '\\' ~ EscapedChar) }
 
   def NormalChar = rule { !QuoteBackslash ~ ANY ~ appendSB() }
+
+  def CharExceptApostrophe = rule { !''' ~ ANY ~ appendSB() }
 
   def EscapedChar = rule (
     QuoteSlashBackSlash ~ appendSB()
@@ -159,23 +168,39 @@ object HParser {
   val QuoteBackslash = CharPredicate("\"\\")
   val QuoteSlashBackSlash = QuoteBackslash ++ "/"
 
-  def apply(input: ParserInput): Try[Expression] = new HParser(input).InputLine.run()
+  def apply(input: ParserInput): Expression = {
+    val parser = new HParser(input)
+    run(parser, parser.InputLine.run())
+  }
 
-  def apply(input: ParserInput, operators: Seq[String]): Try[Expression] = new HParser(input) {
-    override def customOperators = {
-      operators.foldLeft(Vector.newBuilder[Rule1[Identifier]]) { (ops, op) ⇒
-        val opByWhiteSpaces = op.split(" ")
-        var isFirst = true
-        val operationRule = opByWhiteSpaces.foldLeft(WhiteSpace) { (currentRule, segment) ⇒
-          if (isFirst) {
-            isFirst = false
-            rule { currentRule ~ segment }
-          } else {
-            rule { currentRule ~ oneOrMore(WhiteSpaceChar) ~ segment }
+  def apply(input: ParserInput, operators: Seq[String]): Expression = {
+    val parser = new HParser(input) {
+      override def customOperators = {
+        operators.foldLeft(Vector.newBuilder[Rule1[Identifier]]) { (ops, op) ⇒
+          val opByWhiteSpaces = op.split(" ")
+          var isFirst = true
+          val operationRule = opByWhiteSpaces.foldLeft(WhiteSpace) { (currentRule, segment) ⇒
+            if (isFirst) {
+              isFirst = false
+              rule { currentRule ~ segment }
+            } else {
+              rule { currentRule ~ oneOrMore(WhiteSpaceChar) ~ segment }
+            }
           }
-        }
-        ops += rule { capture(operationRule) ~ WhiteSpace ~> ((_:String) ⇒ Identifier(op)) }
-      }.result()
+          ops += rule { capture(operationRule) ~ WhiteSpace ~> ((_:String) ⇒ Identifier(op)) }
+        }.result()
+      }
     }
-  }.InputLine.run()
+    run(parser, parser.InputLine.run())
+  }
+
+  private def run(parser: Parser, runParser: ⇒ Try[ast.Expression]): Expression = {
+    runParser match {
+      case Success(e) ⇒ e
+      case Failure(pe : ParseError) ⇒
+        throw HParseError(pe.format(parser), pe)
+      case Failure(f) ⇒
+        throw f
+    }
+  }
 }
