@@ -1,7 +1,7 @@
-package eu.inn.parser.eval
+package com.hypertino.parser.eval
 
-import eu.inn.binders.value.Value
-import eu.inn.parser.ast.Identifier
+import com.hypertino.binders.value.Value
+import com.hypertino.parser.ast.Identifier
 
 trait Context {
   def identifier: PartialFunction[Identifier, Value]

@@ -1,20 +1,20 @@
-organization := "eu.inn"
+crossScalaVersions := Seq("2.12.1", "2.11.8")
+
+scalaVersion in Global := "2.12.1"
+
+
+organization := "com.hypertino"
 
 name := "expression-parser"
 
-version := "0.1"
-
-scalaVersion := "2.11.8"
+version := "0.1-SNAPSHOT"
 
 libraryDependencies ++= Seq(
-  "eu.inn"          %% "binders-core"   % "0.12.93",
-  "org.parboiled"   %% "parboiled"      % "2.1.3",
-  "org.scalatest"   %% "scalatest"      % "2.2.6"     % "test"
+  "com.hypertino"   %% "binders"        % "1.0-SNAPSHOT",
+  "org.parboiled"   %% "parboiled"      % "2.1.4",
+  "org.scalamock"   %% "scalamock-scalatest-support" % "3.5.0" % "test"
 )
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("public")
 )
-
-publishTo := Some("Innova libs repo" at "http://repproxy.srv.inn.ru/artifactory/libs-release-local")
-credentials += Credentials(Path.userHome / ".ivy2" / ".innova_credentials")

@@ -1,9 +1,9 @@
-package eu.inn.parser
+package com.hypertino.parser
 
 import java.math.BigInteger
 
-import eu.inn.binders.{value ⇒ bn}
-import eu.inn.parser.ast._
+import com.hypertino.binders.{value ⇒ bn}
+import com.hypertino.parser.ast._
 import org.parboiled2.{CharPredicate, Parser, ParserInput, StringBuilding, _}
 
 import scala.annotation.switch
@@ -18,7 +18,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def Literal = rule { WhiteSpace ~ Value }
 
   def Object: Rule1[bn.Obj] = rule {
-    ws('{') ~ zeroOrMore(Pair).separatedBy(ws(',')) ~ ws('}') ~> ((fields: Seq[(String,bn.Value)]) ⇒ bn.ObjV(fields :_*))
+    ws('{') ~ zeroOrMore(Pair).separatedBy(ws(',')) ~ ws('}') ~> ((fields: Seq[(String,bn.Value)]) ⇒ bn.Obj.from(fields :_*))
   }
 
   def Pair = rule { StringUnwrapped ~ ws(':') ~ Value ~> ((_, _)) }
@@ -48,7 +48,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
 
   def DecNumber = rule { capture(Integer ~ optional(Frac) ~ optional(Exp)) ~> (s ⇒ bn.Number(BigDecimal(s))) ~ WhiteSpace }
 
-  def List = rule { ws('[') ~ zeroOrMore(Value).separatedBy(ws(',')) ~ ws(']') ~> (bn.LstV(_ :_*)) }
+  def List = rule { ws('[') ~ zeroOrMore(Value).separatedBy(ws(',')) ~ ws(']') ~> (bn.Lst.from(_ :_*)) }
 
   def Characters = rule { zeroOrMore(NormalChar | '\\' ~ EscapedChar) }
 
@@ -101,7 +101,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def ConstructIdentifier(firstSegment: String, subSegments: Seq[String]) = Identifier(Seq(firstSegment) ++ subSegments)
 
   def FuncArgs = rule { Expression ~ zeroOrMore(',' ~ Expression) ~> (Seq(_) ++ _)}
-  def Func = rule { Ident ~ '(' ~ WhiteSpace ~ optional (FuncArgs) ~ ')' ~ WhiteSpace ~> {(i:Identifier,e:Option[Seq[Expression]]) ⇒ {eu.inn.parser.ast.Function(i,e.getOrElse(Seq.empty))}}}
+  def Func = rule { Ident ~ '(' ~ WhiteSpace ~ optional (FuncArgs) ~ ')' ~ WhiteSpace ~> {(i:Identifier,e:Option[Seq[Expression]]) ⇒ {com.hypertino.parser.ast.Function(i,e.getOrElse(Seq.empty))}}}
 
   def UnaryOps = rule { capture ( CharPredicate("!-") ) ~ WhiteSpace ~> OpIdentifier _ }
   def OpIdentifier(name: String) = Identifier(name)

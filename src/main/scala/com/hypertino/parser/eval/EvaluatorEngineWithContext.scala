@@ -1,7 +1,7 @@
-package eu.inn.parser.eval
+package com.hypertino.parser.eval
 
-import eu.inn.binders.value.Value
-import eu.inn.parser.ast.Identifier
+import com.hypertino.binders.value.Value
+import com.hypertino.parser.ast.Identifier
 
 class EvaluatorEngineWithContext(val context: Context) extends EvaluatorEngine {
   override def identifier = context.identifier orElse super.identifier

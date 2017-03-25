@@ -1,7 +1,7 @@
-package eu.inn.parser.eval
+package com.hypertino.parser.eval
 
-import eu.inn.binders.value.{False, True, Value}
-import eu.inn.parser.ast._
+import com.hypertino.binders.value.{False, True, Value}
+import com.hypertino.parser.ast._
 
 import scala.util.control.NonFatal
 

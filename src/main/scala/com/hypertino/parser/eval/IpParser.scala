@@ -1,6 +1,6 @@
-package eu.inn.parser.eval
+package com.hypertino.parser.eval
 
-import eu.inn.parser.HParser
+import com.hypertino.parser.HParser
 import org.parboiled2._
 
 import scala.util.{Failure, Success}

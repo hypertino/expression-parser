@@ -1,11 +1,11 @@
-package eu.inn.parser
+package com.hypertino.parser
 
-import eu.inn.binders.value.{Number, Text}
-import eu.inn.binders.{value ⇒ bn}
+import com.hypertino.binders.value.{Number, Text}
+import com.hypertino.binders.{value ⇒ bn}
 import org.scalatest.{FreeSpec, Matchers}
 
 class HParserTest extends FreeSpec with Matchers {
-  import eu.inn.parser.ast._
+  import com.hypertino.parser.ast._
 
   "HParser" - {
     "numbers" in {

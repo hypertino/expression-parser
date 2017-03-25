@@ -1,7 +1,7 @@
-package eu.inn.parser.eval
+package com.hypertino.parser.eval
 
-import eu.inn.binders.value.{Null, Obj, Value}
-import eu.inn.parser.ast.Identifier
+import com.hypertino.binders.value.{Null, Obj, Value}
+import com.hypertino.parser.ast.Identifier
 
 case class ValueContext(obj: Obj) extends Context {
   override def identifier = {

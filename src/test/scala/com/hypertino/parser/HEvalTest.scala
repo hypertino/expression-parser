@@ -1,8 +1,8 @@
-package eu.inn.parser
+package com.hypertino.parser
 
-import eu.inn.binders.value.{False, LstV, Number, Obj, ObjV, Text, True, Value}
-import eu.inn.parser.ast.Identifier
-import eu.inn.parser.eval.{EvalEntityNotFound, EvalFunctionNotFound, ValueContext}
+import com.hypertino.binders.value.{False, Lst, Number, Obj, Text, True, Value}
+import com.hypertino.parser.ast.Identifier
+import com.hypertino.parser.eval.{EvalEntityNotFound, EvalFunctionNotFound, ValueContext}
 import org.scalatest.{FreeSpec, Matchers}
 
 class HEvalTest extends FreeSpec with Matchers {
@@ -13,7 +13,7 @@ class HEvalTest extends FreeSpec with Matchers {
     }
 
     "math with variables" in {
-      val context = ObjV("x" → 100)
+      val context = Obj.from("x" → 100)
       val result = HEval("4*x+3*2", context)
       result.get shouldBe Number(406)
     }
@@ -25,7 +25,7 @@ class HEvalTest extends FreeSpec with Matchers {
     }
 
     "math with inner variables" in {
-      val context = ObjV("data" → ObjV("x" → 10))
+      val context = Obj.from("data" → Obj.from("x" → 10))
       val result = HEval.apply("4*data.x+1*2", context)
       result.get shouldBe Number(42)
     }
@@ -65,7 +65,7 @@ class HEvalTest extends FreeSpec with Matchers {
     "text functions" in {
       HEval("""
         split("a,b,c", ",")
-      """).get shouldBe LstV("a","b","c")
+      """).get shouldBe Lst.from("a","b","c")
 
       HEval("""
         indexOf("abc","b")
@@ -87,7 +87,7 @@ class HEvalTest extends FreeSpec with Matchers {
     "custom function test" in {
       val context = new ValueContext(Obj.empty) {
         override def function: PartialFunction[(Identifier, Seq[Value]), Value] = {
-          case (Identifier(Seq("pow")), args) ⇒ args.head.asBigDecimal.pow(args.tail.head.asInt)
+          case (Identifier(Seq("pow")), args) ⇒ args.head.toBigDecimal.pow(args.tail.head.toInt)
         }
       }
 

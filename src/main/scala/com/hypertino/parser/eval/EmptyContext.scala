@@ -1,6 +1,7 @@
-package eu.inn.parser.eval
-import eu.inn.binders.value.Value
-import eu.inn.parser.ast.Identifier
+package com.hypertino.parser.eval
+
+import com.hypertino.binders.value.Value
+import com.hypertino.parser.ast.Identifier
 
 object EmptyContext extends Context {
   override def identifier: PartialFunction[Identifier, Value] = Map.empty

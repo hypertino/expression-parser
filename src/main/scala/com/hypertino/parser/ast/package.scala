@@ -1,6 +1,6 @@
-package eu.inn.parser
+package com.hypertino.parser
 
-import eu.inn.binders.value.Value
+import com.hypertino.binders.value.Value
 
 package object ast {
   sealed trait Expression

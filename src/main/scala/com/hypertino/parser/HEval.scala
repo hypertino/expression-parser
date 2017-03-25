@@ -1,8 +1,9 @@
-package eu.inn.parser
+package com.hypertino.parser
 
-import eu.inn.binders.value.{Obj, Value}
-import eu.inn.parser.ast.Expression
-import eu.inn.parser.eval._
+import com.hypertino.parser.eval._
+import com.hypertino.binders.value.{Obj, Value}
+import com.hypertino.parser.ast.Expression
+import com.hypertino.parser.eval._
 
 import scala.util.{Failure, Success, Try}
 

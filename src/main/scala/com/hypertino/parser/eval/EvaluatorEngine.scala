@@ -1,7 +1,7 @@
-package eu.inn.parser.eval
+package com.hypertino.parser.eval
 
-import eu.inn.binders.value.{Bool, Lst, Obj, Text, Value}
-import eu.inn.parser.ast.Identifier
+import com.hypertino.binders.value._
+import com.hypertino.parser.ast.Identifier
 
 import scala.util.matching.Regex
 
@@ -92,8 +92,8 @@ object EvaluatorEngine {
   def hasNotBop(left: Value, right:Value): Boolean = !hasBop(left, right)
 
   def likeBop(left: Value, right:Value): Value = {
-    val r = new Regex(right.asString)
-    r.findFirstIn(left.asString).isDefined
+    val r = new Regex(right.toString)
+    r.findFirstIn(left.toString).isDefined
   }
 
   def notLikeBop(left: Value, right:Value): Value = !likeBop(left, right)
@@ -105,7 +105,7 @@ object EvaluatorEngine {
     if (arguments.size < 2)
       throw new IllegalArgumentException("`case` expects at least two parameters: index and value")
 
-    val index = arguments.head.asInt
+    val index = arguments.head.toInt
     arguments(index)
   }
 
@@ -120,38 +120,38 @@ object EvaluatorEngine {
       case (sum, Obj(o)) ⇒ sum + o.size
       case (sum, Lst(l)) ⇒ sum + l.size
       case (sum, Bool(b)) ⇒ sum + (if (b) 1 else 0)
-      case (sum, v: Value) ⇒ sum + v.asString.length
+      case (sum, v: Value) ⇒ sum + v.toString.length
     })
   }
 
   def upperFunc(arguments: Seq[Value]): Value = {
     if (arguments.size != 1)
       throw new IllegalArgumentException("`upper` expects an argument")
-    arguments.head.asString.toUpperCase
+    arguments.head.toString.toUpperCase
   }
 
   def lowerFunc(arguments: Seq[Value]): Value = {
     if (arguments.size != 1)
       throw new IllegalArgumentException("`lower` expects an argument")
-    arguments.head.asString.toLowerCase
+    arguments.head.toString.toLowerCase
   }
 
   def compareIgnoreCaseFunc(arguments: Seq[Value]): Value = {
     if (arguments.size != 2)
       throw new IllegalArgumentException("`compareIgnoreCase` expects two arguments")
 
-    arguments.head.asString.compareToIgnoreCase(arguments.tail.head.asString)
+    arguments.head.toString.compareToIgnoreCase(arguments.tail.head.toString)
   }
 
   def applyFunc(arguments: Seq[Value]): Value = {
     if (arguments.size != 2)
       throw new IllegalArgumentException("`apply` expects two arguments")
 
-    val index = arguments.tail.head.asInt
+    val index = arguments.tail.head.toInt
     arguments.head match {
       case Lst(l) ⇒ l(index)
       case Obj(m) ⇒ m(m.keys.toVector(index))
-      case s ⇒ s.asString(index).toString
+      case s ⇒ s.toString()(index).toString
     }
   }
 
@@ -159,25 +159,25 @@ object EvaluatorEngine {
     if (arguments.size != 2)
       throw new IllegalArgumentException("`split` expects two arguments")
 
-    val s = arguments.head.asString
-    Lst(s.split(arguments.tail.head.asString).map(Text))
+    val s = arguments.head.toString
+    Lst(s.split(arguments.tail.head.toString).map(Text))
   }
 
   def indexOfFunc(arguments: Seq[Value]): Value = {
     if (arguments.size != 2)
       throw new IllegalArgumentException("`indexOf` expects two arguments")
 
-    val s = arguments.head.asString
-    s.indexOf(arguments.tail.head.asString)
+    val s = arguments.head.toString
+    s.indexOf(arguments.tail.head.toString)
   }
 
   def substrFunc(arguments: Seq[Value]): Value = {
     if (arguments.size != 2 && arguments.size != 3)
       throw new IllegalArgumentException("`substr` expects two or three arguments")
 
-    val s = arguments.head.asString
-    val from = arguments.tail.head.asInt
-    val to = if (arguments.size != 3) s.length else arguments.tail.tail.head.asInt
-    s.substring(from,to)
+    val s = arguments.head.toString
+    val from = arguments.tail.head.toInt
+    val to = if (arguments.size != 3) s.length else arguments.tail.tail.head.toInt
+    s.substring(from, to)
   }
 }
