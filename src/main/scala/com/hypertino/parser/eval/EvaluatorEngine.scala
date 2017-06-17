@@ -151,7 +151,7 @@ object EvaluatorEngine {
     arguments.head match {
       case Lst(l) ⇒ l(index)
       case Obj(m) ⇒ m(m.keys.toVector(index))
-      case s ⇒ s.toString()(index).toString
+      case s ⇒ s.toString.charAt(index).toString
     }
   }
 
