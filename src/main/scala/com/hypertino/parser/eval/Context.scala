@@ -8,5 +8,6 @@ trait Context {
   def function: PartialFunction[(Identifier, Seq[Value]), Value]
   def unaryOperation: PartialFunction[(Identifier, Value), Value]
   def binaryOperation: PartialFunction[(Value, Identifier, Value), Value]
+  def binaryOperationLeftArgument: PartialFunction[(Value, Identifier), Option[Value]]
   def customOperators: Seq[String]
 }

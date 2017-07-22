@@ -26,11 +26,19 @@ trait ASTPlayer {
 
       case BinaryOperation(left, operation, right) ⇒
         val eLeft = play(left)
-        val eRight = play(right)
-        if (evaluator.binaryOperation.isDefinedAt(eLeft, operation, eRight))
-          evaluator.binaryOperation(eLeft, operation, eRight)
-        else
-          unknownBinaryOperation(eLeft, operation, eRight)
+
+        val resultBasedOnLeft = if (evaluator.binaryOperationLeftArgument.isDefinedAt(eLeft, operation)) {
+          evaluator.binaryOperationLeftArgument(eLeft, operation)
+        } else {
+          None
+        }
+        resultBasedOnLeft.getOrElse {
+          val eRight = play(right)
+          if (evaluator.binaryOperation.isDefinedAt(eLeft, operation, eRight))
+            evaluator.binaryOperation(eLeft, operation, eRight)
+          else
+            unknownBinaryOperation(eLeft, operation, eRight)
+        }
 
       case Function(functionIdentifier, arguments) ⇒
         // special case

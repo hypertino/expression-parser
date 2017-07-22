@@ -62,6 +62,11 @@ class HEvalTest extends FreeSpec with Matchers {
       HEval("""isExists(a)""") shouldBe False
     }
 
+    "left only binary op's test" in {
+      HEval("""isExists(a.b) and a.b""") shouldBe False
+      HEval("""true or a.b""") shouldBe True
+    }
+
     "text functions" in {
       HEval("""
         split("a,b,c", ",")

@@ -29,6 +29,11 @@ trait EvaluatorEngine extends Evaluator {
     "not like" → EvaluatorEngine.notLikeBop
   )
 
+  val binaryOperatorsLeftArgument = Map[String,((Value) ⇒ Option[Value])] (
+    "or" → EvaluatorEngine.orLeftBop,
+    "and" → EvaluatorEngine.andLeftBop
+  )
+
   val unaryOperators = Map[String,Value ⇒ Value] (
     "-" → EvaluatorEngine.minusUop,
     "!" → EvaluatorEngine.invertUop
@@ -51,6 +56,11 @@ trait EvaluatorEngine extends Evaluator {
   override def binaryOperation = {
     case (left: Value, i: Identifier, right: Value) if i.segments.tail.isEmpty && binaryOperators.contains(i.segments.head) ⇒
       binaryOperators(i.segments.head)(left,right)
+  }
+
+  def binaryOperationLeftArgument: PartialFunction[(Value, Identifier), Option[Value]] = {
+    case (left: Value, i: Identifier) if i.segments.tail.isEmpty && binaryOperatorsLeftArgument.contains(i.segments.head) ⇒
+      binaryOperatorsLeftArgument(i.segments.head)(left)
   }
 
   override def unaryOperation = {
@@ -83,6 +93,9 @@ object EvaluatorEngine {
   def gteqBop(left: Value, right:Value) = left >= right
   def ltBop(left: Value, right:Value) = left < right
   def lteqBop(left: Value, right:Value) = left <= right
+
+  def orLeftBop(left: Value): Option[Value] = if (left.toBoolean) Some(left) else None
+  def andLeftBop(left: Value): Option[Value] = if (!left.toBoolean) Some(left) else None
 
   def hasBop(left: Value, right:Value): Boolean = right match {
     case Lst(seq) ⇒ seq.forall(left.contains)

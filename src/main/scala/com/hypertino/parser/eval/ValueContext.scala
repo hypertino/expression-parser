@@ -11,5 +11,6 @@ case class ValueContext(obj: Obj) extends Context {
   override def function: PartialFunction[(Identifier, Seq[Value]), Value] = Map.empty
   override def unaryOperation: PartialFunction[(Identifier, Value), Value] = Map.empty
   override def binaryOperation: PartialFunction[(Value, Identifier, Value), Value] = Map.empty
+  override def binaryOperationLeftArgument: PartialFunction[(Value, Identifier), Option[Value]] = Map.empty
   override def customOperators = Seq.empty[String]
 }
