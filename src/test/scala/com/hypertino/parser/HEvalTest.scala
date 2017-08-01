@@ -104,5 +104,11 @@ class HEvalTest extends FreeSpec with Matchers {
         HEval("pow(2,8)")
       }
     }
+
+    "string interpolation" in {
+      val context = Obj.from("id" → 100500, "name" → "John")
+      HEval("s\"user id is: $id\"", context) shouldBe Text("user id is: 100500")
+      HEval("s\"user name is: ${name}\"", context) shouldBe Text("user name is: John")
+    }
   }
 }

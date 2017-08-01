@@ -19,6 +19,7 @@ package object ast {
   case class UnaryOperation(op: Identifier, argument: Expression) extends Expression
   case class BinaryOperation(leftArgument: Expression, op: Identifier, rightArgument: Expression) extends Expression
   case class Function(name: Identifier, arguments: Seq[Expression]) extends Expression
+  case class StringInterpolation(arguments: Seq[Expression]) extends Expression
 
   object Identifier {
     def isSafeFirstChar(c: Char) = c.isLetter || c == '$' || c == '_'

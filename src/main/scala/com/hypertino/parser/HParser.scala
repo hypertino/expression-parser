@@ -2,6 +2,7 @@ package com.hypertino.parser
 
 import java.math.BigInteger
 
+import com.hypertino.binders.value.Text
 import com.hypertino.binders.{value ⇒ bn}
 import com.hypertino.parser.ast._
 import org.parboiled2.{CharPredicate, Parser, ParserInput, StringBuilding, _}
@@ -97,6 +98,13 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def TicCharacters = rule { zeroOrMore( (!'`' ~ ANY ~ appendSB()) | ("``" ~ appendSB('`'))) }
   def TickString = rule { '`' ~ clearSB() ~ TicCharacters ~ ws('`') ~ push(sb.toString) }
 
+  // string interpolation
+  def CharExceptQuoteDollar = rule { !QuoteDollar ~ ANY ~ appendSB() }
+  def InterpolationStringChars = rule { CharExceptQuoteDollar | "$$" ~ appendSB("$") }
+  def InterpolationExpression = rule { "${" ~ Expression ~ '}' | "$" ~ IdentNoWhitespace }
+  def InterpolationString = rule { clearSB() ~ oneOrMore(InterpolationStringChars) ~ push(sb.toString) ~> (s ⇒ Constant(Text(s))) }
+  def Interpolation = rule { "s\"" ~ oneOrMore(InterpolationString | InterpolationExpression) ~ ws('"') ~> StringInterpolation }
+
   // identifiers
 
   def IdentFirstChar = CharPredicate.Alpha ++ CharPredicate("$_")
@@ -105,6 +113,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def IdentFirstSegmentTic: Rule1[String] = rule { TickString }
   def IdentSegmentTic: Rule1[String] = rule { '.' ~ WhiteSpace ~ TickString }
   def IdentSegment = rule { "." ~ WhiteSpace ~ capture (IdentFirstChar ~ zeroOrMore(IdentChar)) }
+  def IdentNoWhitespace = rule { (IdentFirstSegmentTic | IdentFirstSegment) ~ zeroOrMore(IdentSegmentTic | IdentSegment) ~> ConstructIdentifier _ }
   def Ident = rule { (IdentFirstSegmentTic | IdentFirstSegment) ~ zeroOrMore(IdentSegmentTic | IdentSegment) ~ WhiteSpace ~> ConstructIdentifier _ }
 
   def ConstructIdentifier(firstSegment: String, subSegments: Seq[String]) = Identifier(Seq(firstSegment) ++ subSegments)
@@ -156,7 +165,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
 
   //def ApplyFunction(left: Expression, right: Expression): Expression = Function(Identifier("apply"), Seq(left,right))
 
-  def SingleExpression: Rule1[Expression] = rule { WhiteSpace ~ (/*ApplyExpression | */ConstExpression | Func | Ident | UnaryExpression | ParensExpression) ~ WhiteSpace }
+  def SingleExpression: Rule1[Expression] = rule { WhiteSpace ~ (/*ApplyExpression | */ConstExpression | Func | Interpolation | Ident | UnaryExpression | ParensExpression) ~ WhiteSpace }
 
   def Expression: Rule1[Expression] = BinaryExpression(0)
 
@@ -167,6 +176,7 @@ object HParser {
   val WhiteSpaceChar = CharPredicate(" \n\r\t\f")
   val QuoteBackslash = CharPredicate("\"\\")
   val QuoteSlashBackSlash = QuoteBackslash ++ "/"
+  val QuoteDollar = CharPredicate("\"$")
 
   def apply(input: ParserInput): Expression = {
     val parser = new HParser(input)

@@ -1,6 +1,6 @@
 package com.hypertino.parser.eval
 
-import com.hypertino.binders.value.{False, True, Value}
+import com.hypertino.binders.value.{False, Text, True, Value}
 import com.hypertino.parser.ast._
 
 import scala.util.control.NonFatal
@@ -58,6 +58,9 @@ trait ASTPlayer {
           else
             unknownFunction(functionIdentifier, eArgs)
         }
+
+      case StringInterpolation(arguments) ⇒
+        Text(arguments.map(play).mkString)
     }
   }
 

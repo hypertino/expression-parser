@@ -114,5 +114,16 @@ class HParserTest extends FreeSpec with Matchers {
       HParser("""'abc'""") shouldBe Constant(Text("abc"))
       HParser("\"\\u000A\"") shouldBe Constant(Text("\n"))
     }
+
+    "string interpolation" in {
+      HParser("s\"${abc}\"") shouldBe StringInterpolation(Seq(Identifier("abc")))
+      HParser("s\"${abc} ${ekl}\"") shouldBe StringInterpolation(Seq(Identifier("abc"), Constant(" "), Identifier("ekl")))
+      HParser("s\"$${abc} ${ekl}\"") shouldBe StringInterpolation(Seq(Constant("${abc} "), Identifier("ekl")))
+
+      HParser("s\"$abc\"") shouldBe StringInterpolation(Seq(Identifier("abc")))
+      HParser("s\"$abc hey $ekl\"") shouldBe StringInterpolation(Seq(Identifier("abc"), Constant(" hey "), Identifier("ekl")))
+      HParser("s\"$$abc $ekl\"") shouldBe StringInterpolation(Seq(Constant("$abc "), Identifier("ekl")))
+      HParser("s\"$$abc $$ekl\"") shouldBe StringInterpolation(Seq(Constant("$abc $ekl")))
+    }
   }
 }
