@@ -113,8 +113,8 @@ class HEvalTest extends FreeSpec with Matchers {
 
     "parse unix-time functions" in {
       HEval("parseUnixTime('2001-07-04T12:08:56.235-0700')") shouldBe Number(994273736235l)
-      HEval("parseUnixTime('2001-07-04','yyyy-MM-dd')") shouldBe Number(994197600000l)
-      HEval("parseUnixTime('04-07-2001','dd-MM-yyyy')") shouldBe Number(994197600000l)
+      HEval("parseUnixTime('2001-07-04','yyyy-MM-dd','+0002')") shouldBe Number(994204800000l)
+      HEval("parseUnixTime('04-07-2001','dd-MM-yyyy','+0002')") shouldBe Number(994204800000l)
     }
 
     "format unix-time functions" in {
