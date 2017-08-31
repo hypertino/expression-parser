@@ -1,5 +1,9 @@
 package com.hypertino.parser.eval
 
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.util.{Date, TimeZone}
+
 import com.hypertino.binders.value._
 import com.hypertino.parser.ast.Identifier
 
@@ -50,7 +54,9 @@ trait EvaluatorEngine extends Evaluator {
     "indexOf" → EvaluatorEngine.indexOfFunc,
     "substr" → EvaluatorEngine.substrFunc,
     "compareIgnoreCase" → EvaluatorEngine.compareIgnoreCaseFunc,
-    "apply" → EvaluatorEngine.applyFunc
+    "apply" → EvaluatorEngine.applyFunc,
+    "formatUnixTime" → EvaluatorEngine.formatUnixTimeFunc,
+    "parseUnixTime" → EvaluatorEngine.parseUnixTimeFunc
   )
 
   override def binaryOperation = {
@@ -185,12 +191,42 @@ object EvaluatorEngine {
   }
 
   def substrFunc(arguments: Seq[Value]): Value = {
-    if (arguments.size != 2 && arguments.size != 3)
+    if (arguments.size < 2 || arguments.size > 3)
       throw new IllegalArgumentException("`substr` expects two or three arguments")
 
     val s = arguments.head.toString
     val from = arguments.tail.head.toInt
     val to = if (arguments.size != 3) s.length else arguments.tail.tail.head.toInt
     s.substring(from, to)
+  }
+
+  protected def isoDateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+  lazy val defaultDateFormat = new SimpleDateFormat(isoDateFormat)
+
+  def parseUnixTimeFunc(arguments: Seq[Value]): Value = {
+    if (arguments.size < 1 || arguments.size > 3)
+      throw new IllegalArgumentException("`parseUnixTime` expects one - three arguments")
+
+    dateFormatter(arguments).parse(arguments.head.toString).toInstant.toEpochMilli
+  }
+
+  def formatUnixTimeFunc(arguments: Seq[Value]): Value = {
+    if (arguments.size < 1 || arguments.size > 3)
+      throw new IllegalArgumentException("`formatUnixTimeFunc` expects one - three arguments")
+
+    dateFormatter(arguments).format(Date.from(Instant.ofEpochMilli(arguments.head.toLong)))
+  }
+
+  protected def dateFormatter(arguments: Seq[Value]): SimpleDateFormat = {
+    if(arguments.size > 1) {
+      val fmt = if (arguments.tail.head.nonEmpty) arguments.tail.head.toString else isoDateFormat
+      val df = new SimpleDateFormat(fmt)
+      if(arguments.size > 2) {
+        df.setTimeZone(TimeZone.getTimeZone(arguments.tail.tail.head.toString))
+      }
+      df
+    }
+    else
+      defaultDateFormat
   }
 }

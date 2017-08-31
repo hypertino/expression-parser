@@ -110,5 +110,18 @@ class HEvalTest extends FreeSpec with Matchers {
       HEval("s\"user id is: $id\"", context) shouldBe Text("user id is: 100500")
       HEval("s\"user name is: ${name}\"", context) shouldBe Text("user name is: John")
     }
+
+    "parse unix-time functions" in {
+      HEval("parseUnixTime('2001-07-04T12:08:56.235-0700')") shouldBe Number(994273736235l)
+      HEval("parseUnixTime('2001-07-04','yyyy-MM-dd')") shouldBe Number(994197600000l)
+      HEval("parseUnixTime('04-07-2001','dd-MM-yyyy')") shouldBe Number(994197600000l)
+    }
+
+    "format unix-time functions" in {
+      HEval("formatUnixTime(994273736235,'','UTC')") shouldBe Text("2001-07-04T19:08:56.235+0000")
+      HEval("formatUnixTime(994229700000, 'yyyy-MM-dd', 'UTC')") shouldBe Text("2001-07-04")
+
+      HEval("formatUnixTime(parseUnixTime('04-07-2001','dd-MM-yyyy', 'UTC') + 24*60*60*1000, 'dd-MM-yyyy', 'UTC')") shouldBe Text("05-07-2001")
+    }
   }
 }
