@@ -56,7 +56,8 @@ trait EvaluatorEngine extends Evaluator {
     "compareIgnoreCase" → EvaluatorEngine.compareIgnoreCaseFunc,
     "apply" → EvaluatorEngine.applyFunc,
     "formatUnixTime" → EvaluatorEngine.formatUnixTimeFunc,
-    "parseUnixTime" → EvaluatorEngine.parseUnixTimeFunc
+    "parseUnixTime" → EvaluatorEngine.parseUnixTimeFunc,
+    "unixTime" → EvaluatorEngine.unixTimeFunc
   )
 
   override def binaryOperation = {
@@ -212,9 +213,16 @@ object EvaluatorEngine {
 
   def formatUnixTimeFunc(arguments: Seq[Value]): Value = {
     if (arguments.size < 1 || arguments.size > 3)
-      throw new IllegalArgumentException("`formatUnixTimeFunc` expects one - three arguments")
+      throw new IllegalArgumentException("`formatUnixTime` expects one - three arguments")
 
     dateFormatter(arguments).format(Date.from(Instant.ofEpochMilli(arguments.head.toLong)))
+  }
+
+  def unixTimeFunc(arguments: Seq[Value]): Value = {
+    if (arguments.nonEmpty)
+      throw new IllegalArgumentException("`unixTime` doesn't accepts arguments")
+
+    Instant.now().toEpochMilli
   }
 
   protected def dateFormatter(arguments: Seq[Value]): SimpleDateFormat = {

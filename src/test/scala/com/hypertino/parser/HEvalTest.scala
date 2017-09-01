@@ -123,5 +123,10 @@ class HEvalTest extends FreeSpec with Matchers {
 
       HEval("formatUnixTime(parseUnixTime('04-07-2001','dd-MM-yyyy', 'UTC') + 24*60*60*1000, 'dd-MM-yyyy', 'UTC')") shouldBe Text("05-07-2001")
     }
+
+    "unix-time (now)" in {
+      val ms = System.currentTimeMillis()
+      HEval("unixTime()").asInstanceOf[Number].v.toLong should be >= ms
+    }
   }
 }
