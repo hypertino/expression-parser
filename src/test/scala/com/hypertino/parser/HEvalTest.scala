@@ -56,14 +56,14 @@ class HEvalTest extends FreeSpec with Matchers {
 
     "functions test" in {
       HEval("!false") shouldBe True
-      HEval("""isEmpty("")""") shouldBe True
-      HEval("""!isEmpty("")""") shouldBe False
-      HEval("""isEmpty("b")""") shouldBe False
-      HEval("""isExists(a)""") shouldBe False
+      HEval("""empty("")""") shouldBe True
+      HEval("""!empty("")""") shouldBe False
+      HEval("""empty("b")""") shouldBe False
+      HEval("""exists(a)""") shouldBe False
     }
 
     "left only binary op's test" in {
-      HEval("""isExists(a.b) and a.b""") shouldBe False
+      HEval("""exists(a.b) and a.b""") shouldBe False
       HEval("""true or a.b""") shouldBe True
     }
 
@@ -73,7 +73,7 @@ class HEvalTest extends FreeSpec with Matchers {
       """) shouldBe Lst.from("a","b","c")
 
       HEval("""
-        indexOf("abc","b")
+        index_of("abc","b")
       """) shouldBe Number(1)
 
       HEval("""
@@ -112,21 +112,21 @@ class HEvalTest extends FreeSpec with Matchers {
     }
 
     "parse unix-time functions" in {
-      HEval("parseUnixTime('2001-07-04T12:08:56.235-0700')") shouldBe Number(994273736235l)
-      HEval("parseUnixTime('2001-07-04','yyyy-MM-dd','+0002')") shouldBe Number(994204800000l)
-      HEval("parseUnixTime('04-07-2001','dd-MM-yyyy','+0002')") shouldBe Number(994204800000l)
+      HEval("parse_unix_time('2001-07-04T12:08:56.235-0700')") shouldBe Number(994273736235l)
+      HEval("parse_unix_time('2001-07-04','yyyy-MM-dd','+0002')") shouldBe Number(994204800000l)
+      HEval("parse_unix_time('04-07-2001','dd-MM-yyyy','+0002')") shouldBe Number(994204800000l)
     }
 
     "format unix-time functions" in {
-      HEval("formatUnixTime(994273736235,'','UTC')") shouldBe Text("2001-07-04T19:08:56.235+0000")
-      HEval("formatUnixTime(994229700000, 'yyyy-MM-dd', 'UTC')") shouldBe Text("2001-07-04")
+      HEval("format_unix_time(994273736235,'','UTC')") shouldBe Text("2001-07-04T19:08:56.235+0000")
+      HEval("format_unix_time(994229700000, 'yyyy-MM-dd', 'UTC')") shouldBe Text("2001-07-04")
 
-      HEval("formatUnixTime(parseUnixTime('04-07-2001','dd-MM-yyyy', 'UTC') + 24*60*60*1000, 'dd-MM-yyyy', 'UTC')") shouldBe Text("05-07-2001")
+      HEval("format_unix_time(parse_unix_time('04-07-2001','dd-MM-yyyy', 'UTC') + 24*60*60*1000, 'dd-MM-yyyy', 'UTC')") shouldBe Text("05-07-2001")
     }
 
     "unix-time (now)" in {
       val ms = System.currentTimeMillis()
-      HEval("unixTime()").asInstanceOf[Number].v.toLong should be >= ms
+      HEval("unix_time()").asInstanceOf[Number].v.toLong should be >= ms
     }
   }
 }

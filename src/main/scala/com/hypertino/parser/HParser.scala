@@ -124,7 +124,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def UnaryOps = rule { capture ( CharPredicate("!-") ) ~ WhiteSpace ~> OpIdentifier _ }
   def OpIdentifier(name: String) = Identifier(name)
 
-  def UnaryExpression = rule { UnaryOps ~ Expression ~> UnaryOperation }
+  def UnaryExpression = rule { UnaryOps ~ SingleExpression ~> UnaryOperation }
 
   // sorted by precedence
   def BinaryOps = Vector(

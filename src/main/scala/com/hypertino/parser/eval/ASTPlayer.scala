@@ -42,7 +42,7 @@ trait ASTPlayer {
 
       case Function(functionIdentifier, arguments) ⇒
         // special case
-        if (functionIdentifier.segments.head == "isExists" && functionIdentifier.segments.tail.isEmpty ) {
+        if (functionIdentifier.segments.head == "exists" && functionIdentifier.segments.tail.isEmpty ) {
           try {
             arguments.map(play)
             True

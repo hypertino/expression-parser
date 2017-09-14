@@ -70,6 +70,20 @@ class HParserTest extends FreeSpec with Matchers {
       }
     }*/
 
+    "unary + binary operator precedence" in {
+      HParser("!a or b") shouldBe BinaryOperation(
+        UnaryOperation(Identifier("!"), Identifier("a")),
+        Identifier("or"),
+        Identifier("b")
+      )
+
+      HParser("!isEmpty(a) or b") shouldBe BinaryOperation(
+        UnaryOperation(Identifier("!"), Function(Identifier("isEmpty"),Seq(Identifier("a")))),
+        Identifier("or"),
+        Identifier("b")
+      )
+    }
+
     "binary operator precedence" in {
       HParser("5+10*3") shouldBe BinaryOperation(Constant(bn.Number(5)), Identifier("+"),
         BinaryOperation(Constant(bn.Number(10)), Identifier("*"), Constant(bn.Number(3)))

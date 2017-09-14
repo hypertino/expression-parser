@@ -45,19 +45,19 @@ trait EvaluatorEngine extends Evaluator {
 
   val functions = Map[String,Seq[Value] ⇒ Value] (
     "case" → EvaluatorEngine.caseFunc,
-    "isEmpty" → EvaluatorEngine.isEmptyFunc,
-    "isExists" → EvaluatorEngine.isExistsFunc,
+    "empty" → EvaluatorEngine.isEmptyFunc,
+    "exists" → EvaluatorEngine.isExistsFunc,
     "length" → EvaluatorEngine.lengthFunc,
     "upper" → EvaluatorEngine.upperFunc,
     "lower" → EvaluatorEngine.lowerFunc,
     "split" → EvaluatorEngine.splitFunc,
-    "indexOf" → EvaluatorEngine.indexOfFunc,
+    "index_of" → EvaluatorEngine.indexOfFunc,
     "substr" → EvaluatorEngine.substrFunc,
-    "compareIgnoreCase" → EvaluatorEngine.compareIgnoreCaseFunc,
+    "compare_ignoring_case" → EvaluatorEngine.compareIgnoreCaseFunc,
     "apply" → EvaluatorEngine.applyFunc,
-    "formatUnixTime" → EvaluatorEngine.formatUnixTimeFunc,
-    "parseUnixTime" → EvaluatorEngine.parseUnixTimeFunc,
-    "unixTime" → EvaluatorEngine.unixTimeFunc
+    "format_unix_time" → EvaluatorEngine.formatUnixTimeFunc,
+    "parse_unix_time" → EvaluatorEngine.parseUnixTimeFunc,
+    "unix_time" → EvaluatorEngine.unixTimeFunc
   )
 
   override def binaryOperation = {
@@ -158,7 +158,7 @@ object EvaluatorEngine {
 
   def compareIgnoreCaseFunc(arguments: Seq[Value]): Value = {
     if (arguments.size != 2)
-      throw new IllegalArgumentException("`compareIgnoreCase` expects two arguments")
+      throw new IllegalArgumentException("`compare_ignoring_case` expects two arguments")
 
     arguments.head.toString.compareToIgnoreCase(arguments.tail.head.toString)
   }
@@ -185,7 +185,7 @@ object EvaluatorEngine {
 
   def indexOfFunc(arguments: Seq[Value]): Value = {
     if (arguments.size != 2)
-      throw new IllegalArgumentException("`indexOf` expects two arguments")
+      throw new IllegalArgumentException("`index_of` expects two arguments")
 
     val s = arguments.head.toString
     s.indexOf(arguments.tail.head.toString)
@@ -206,21 +206,21 @@ object EvaluatorEngine {
 
   def parseUnixTimeFunc(arguments: Seq[Value]): Value = {
     if (arguments.size < 1 || arguments.size > 3)
-      throw new IllegalArgumentException("`parseUnixTime` expects one - three arguments")
+      throw new IllegalArgumentException("`parse_unix_time` expects one - three arguments")
 
     dateFormatter(arguments).parse(arguments.head.toString).toInstant.toEpochMilli
   }
 
   def formatUnixTimeFunc(arguments: Seq[Value]): Value = {
     if (arguments.size < 1 || arguments.size > 3)
-      throw new IllegalArgumentException("`formatUnixTime` expects one - three arguments")
+      throw new IllegalArgumentException("`format_unix_time` expects one - three arguments")
 
     dateFormatter(arguments).format(Date.from(Instant.ofEpochMilli(arguments.head.toLong)))
   }
 
   def unixTimeFunc(arguments: Seq[Value]): Value = {
     if (arguments.nonEmpty)
-      throw new IllegalArgumentException("`unixTime` doesn't accepts arguments")
+      throw new IllegalArgumentException("`unix_time` doesn't accepts arguments")
 
     Instant.now().toEpochMilli
   }
