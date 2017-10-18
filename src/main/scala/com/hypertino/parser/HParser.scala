@@ -30,7 +30,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
     run {
       (cursorChar: @switch) match {
         case '"' ⇒ String
-        case ''' ⇒ StringNoEscapes
+        case '\'' ⇒ StringNoEscapes
         case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' ⇒ Number
         case '{' ⇒ Object
         case '[' ⇒ List
@@ -48,7 +48,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
 
   def StringUnwrapped = rule { '"' ~ clearSB() ~ Characters ~ ws('"') ~ push(sb.toString) }
 
-  def StringUnwrappedNoEscapes = rule { ''' ~ clearSB() ~ zeroOrMore(CharExceptApostrophe) ~ ws(''') ~ push(sb.toString) }
+  def StringUnwrappedNoEscapes = rule { '\'' ~ clearSB() ~ zeroOrMore(CharExceptApostrophe) ~ ws('\'') ~ push(sb.toString) }
 
   def Number = rule { HexNumber | DecNumber }
 
@@ -62,7 +62,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
 
   def NormalChar = rule { !QuoteBackslash ~ ANY ~ appendSB() }
 
-  def CharExceptApostrophe = rule { !''' ~ ANY ~ appendSB() }
+  def CharExceptApostrophe = rule { !'\'' ~ ANY ~ appendSB() }
 
   def EscapedChar = rule (
     QuoteSlashBackSlash ~ appendSB()

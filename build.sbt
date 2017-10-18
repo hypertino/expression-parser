@@ -1,16 +1,15 @@
-crossScalaVersions := Seq("2.12.1", "2.11.8")
+crossScalaVersions := Seq("2.12.3", "2.11.11")
 
-scalaVersion in Global := "2.12.1"
-
+scalaVersion := crossScalaVersions.value.head
 
 organization := "com.hypertino"
 
 name := "expression-parser"
 
-version := "0.1-SNAPSHOT"
+version := "0.2-SNAPSHOT"
 
 libraryDependencies ++= Seq(
-  "com.hypertino"   %% "binders"        % "1.0-SNAPSHOT",
+  "com.hypertino"   %% "binders"        % "1.2.0",
   "org.parboiled"   %% "parboiled"      % "2.1.4",
   "org.scalamock"   %% "scalamock-scalatest-support" % "3.5.0" % "test"
 )
@@ -44,8 +43,8 @@ pomExtra := <url>https://github.com/hypertino/expression-parser</url>
     </developer>
   </developers>
 
-pgpSecretRing := file("./travis/ht-oss-private.asc")
-pgpPublicRing := file("./travis/ht-oss-public.asc")
+pgpSecretRing := file("./travis/script/ht-oss-private.asc")
+pgpPublicRing := file("./travis/script/ht-oss-public.asc")
 usePgpKeyHex("F8CDEF49B0EDEDCC")
 pgpPassphrase := Option(System.getenv().get("oss_gpg_passphrase")).map(_.toCharArray)
 publishMavenStyle := true
