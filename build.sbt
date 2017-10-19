@@ -6,7 +6,7 @@ organization := "com.hypertino"
 
 name := "expression-parser"
 
-version := "0.2.0"
+version := "0.2.1"
 
 libraryDependencies ++= Seq(
   "com.hypertino"   %% "binders"        % "1.2.0",
