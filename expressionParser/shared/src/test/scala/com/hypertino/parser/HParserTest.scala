@@ -1,10 +1,11 @@
 package com.hypertino.parser
 
 import com.hypertino.binders.value.{Number, Text}
-import com.hypertino.binders.{value ⇒ bn}
-import org.scalatest.{FreeSpec, Matchers}
+import com.hypertino.binders.{value => bn}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class HParserTest extends FreeSpec with Matchers {
+class HParserTest extends AnyFreeSpec with Matchers {
   import com.hypertino.parser.ast._
 
   "HParser" - {
@@ -62,10 +63,10 @@ class HParserTest extends FreeSpec with Matchers {
     /*"apply precedence" in {
       val parser = new HParser("""!(true)""")
       parser.InputLine.run() match {
-        case Failure(e: ParseError) ⇒
+        case Failure(e: ParseError) =>
           val errorMsg = parser.formatError(e, new ErrorFormatter(showTraces = true, traceCutOff = 320))
           println(errorMsg)
-        case other ⇒
+        case other =>
           println(other)
       }
     }*/

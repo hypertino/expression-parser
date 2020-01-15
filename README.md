@@ -14,7 +14,7 @@ val result = HEval("4*5+3*2").toInt
 It's possible to provide a context with variables to the parser:
 
 ```scala
-val context = Obj.from("user" → Obj.from("count" → 10))
+val context = Obj.from("user" -> Obj.from("count" -> 10))
 val result = HEval("4*user.count+1*2", context).toInt
 // result = 42
 ```
@@ -24,7 +24,7 @@ You also can add your own functions into the context:
 ```scala
 val context = new ValueContext(Obj.empty) {
     override def function: PartialFunction[(Identifier, Seq[Value]), Value] = {
-        case (Identifier(Seq("pow")), args) ⇒ args.head.toBigDecimal.pow(args.tail.head.toInt)
+        case (Identifier(Seq("pow")), args) => args.head.toBigDecimal.pow(args.tail.head.toInt)
     }
 }
 

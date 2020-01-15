@@ -5,7 +5,7 @@ import com.hypertino.parser.ast.Identifier
 
 case class ValueContext(obj: Obj) extends Context {
   override def identifier = {
-    case identifier ⇒ obj(identifier.segments.map(Text))
+    case identifier => obj(identifier.segments.map(Text))
   }
 
   override def function: PartialFunction[(Identifier, Seq[Value]), Value] = Map.empty

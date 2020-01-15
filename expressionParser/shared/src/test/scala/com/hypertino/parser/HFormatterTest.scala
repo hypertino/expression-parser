@@ -1,11 +1,11 @@
 package com.hypertino.parser
 
 import com.hypertino.binders.value.{Number, Text}
-import com.hypertino.binders.{value ⇒ bn}
-import org.scalatest.{FlatSpec, Matchers}
+import com.hypertino.binders.{value => bn}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class HFormatterTest extends FlatSpec with Matchers {
-
+class HFormatterTest extends AnyFlatSpec with Matchers {
   import com.hypertino.parser.ast._
 
   "HFormatter" should "format numbers" in {

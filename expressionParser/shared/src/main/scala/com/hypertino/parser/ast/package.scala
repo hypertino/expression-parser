@@ -5,7 +5,7 @@ import com.hypertino.binders.value.Value
 package object ast {
   sealed trait Expression
   case class Identifier(segments: Seq[String]) extends Expression {
-    override def toString: String = segments.map { s ⇒
+    override def toString: String = segments.map { s =>
       if (Identifier.isSafeIdentifierSegment(s)) {
         s
       }

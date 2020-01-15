@@ -10,73 +10,73 @@ import com.hypertino.parser.ast.Identifier
 import scala.util.matching.Regex
 
 trait EvaluatorEngine extends Evaluator {
-  val binaryOperators = Map[String,((Value,Value) ⇒ Value)] (
-    "+" → EvaluatorEngine.addBop,
-    "-" → EvaluatorEngine.subBop,
-    "*" → EvaluatorEngine.mulBop,
-    "/" → EvaluatorEngine.divBop,
-    "%" → EvaluatorEngine.remBop,
-    "++" → EvaluatorEngine.addaddBop,
-    "--" → EvaluatorEngine.subsubBop,
-    "or" → EvaluatorEngine.orBop,
-    "xor" → EvaluatorEngine.xorBop,
-    "and" → EvaluatorEngine.andBop,
-    "=" → EvaluatorEngine.eqBop,
-    "!=" → EvaluatorEngine.neqBop,
-    ">" → EvaluatorEngine.gtBop,
-    ">=" → EvaluatorEngine.gteqBop,
-    "<" → EvaluatorEngine.ltBop,
-    "<=" → EvaluatorEngine.lteqBop,
-    "has" → EvaluatorEngine.hasBop,
-    "has not" → EvaluatorEngine.hasNotBop,
-    "like" → EvaluatorEngine.likeBop,
-    "not like" → EvaluatorEngine.notLikeBop
+  val binaryOperators = Map[String,((Value,Value) => Value)] (
+    "+" -> EvaluatorEngine.addBop,
+    "-" -> EvaluatorEngine.subBop,
+    "*" -> EvaluatorEngine.mulBop,
+    "/" -> EvaluatorEngine.divBop,
+    "%" -> EvaluatorEngine.remBop,
+    "++" -> EvaluatorEngine.addaddBop,
+    "--" -> EvaluatorEngine.subsubBop,
+    "or" -> EvaluatorEngine.orBop,
+    "xor" -> EvaluatorEngine.xorBop,
+    "and" -> EvaluatorEngine.andBop,
+    "=" -> EvaluatorEngine.eqBop,
+    "!=" -> EvaluatorEngine.neqBop,
+    ">" -> EvaluatorEngine.gtBop,
+    ">=" -> EvaluatorEngine.gteqBop,
+    "<" -> EvaluatorEngine.ltBop,
+    "<=" -> EvaluatorEngine.lteqBop,
+    "has" -> EvaluatorEngine.hasBop,
+    "has not" -> EvaluatorEngine.hasNotBop,
+    "like" -> EvaluatorEngine.likeBop,
+    "not like" -> EvaluatorEngine.notLikeBop
   )
 
-  val binaryOperatorsLeftArgument = Map[String,((Value) ⇒ Option[Value])] (
-    "or" → EvaluatorEngine.orLeftBop,
-    "and" → EvaluatorEngine.andLeftBop
+  val binaryOperatorsLeftArgument = Map[String,((Value) => Option[Value])] (
+    "or" -> EvaluatorEngine.orLeftBop,
+    "and" -> EvaluatorEngine.andLeftBop
   )
 
-  val unaryOperators = Map[String,Value ⇒ Value] (
-    "-" → EvaluatorEngine.minusUop,
-    "!" → EvaluatorEngine.invertUop
+  val unaryOperators = Map[String,Value => Value] (
+    "-" -> EvaluatorEngine.minusUop,
+    "!" -> EvaluatorEngine.invertUop
   )
 
-  val functions = Map[String,Seq[Value] ⇒ Value] (
-    "case" → EvaluatorEngine.caseFunc,
-    "empty" → EvaluatorEngine.isEmptyFunc,
-    "exists" → EvaluatorEngine.isExistsFunc,
-    "length" → EvaluatorEngine.lengthFunc,
-    "upper" → EvaluatorEngine.upperFunc,
-    "lower" → EvaluatorEngine.lowerFunc,
-    "split" → EvaluatorEngine.splitFunc,
-    "index_of" → EvaluatorEngine.indexOfFunc,
-    "substr" → EvaluatorEngine.substrFunc,
-    "compare_ignoring_case" → EvaluatorEngine.compareIgnoreCaseFunc,
-    "apply" → EvaluatorEngine.applyFunc,
-    "format_unix_time" → EvaluatorEngine.formatUnixTimeFunc,
-    "parse_unix_time" → EvaluatorEngine.parseUnixTimeFunc,
-    "unix_time" → EvaluatorEngine.unixTimeFunc
+  val functions = Map[String,Seq[Value] => Value] (
+    "case" -> EvaluatorEngine.caseFunc,
+    "empty" -> EvaluatorEngine.isEmptyFunc,
+    "exists" -> EvaluatorEngine.isExistsFunc,
+    "length" -> EvaluatorEngine.lengthFunc,
+    "upper" -> EvaluatorEngine.upperFunc,
+    "lower" -> EvaluatorEngine.lowerFunc,
+    "split" -> EvaluatorEngine.splitFunc,
+    "index_of" -> EvaluatorEngine.indexOfFunc,
+    "substr" -> EvaluatorEngine.substrFunc,
+    "compare_ignoring_case" -> EvaluatorEngine.compareIgnoreCaseFunc,
+    "apply" -> EvaluatorEngine.applyFunc,
+    "format_unix_time" -> EvaluatorEngine.formatUnixTimeFunc,
+    "parse_unix_time" -> EvaluatorEngine.parseUnixTimeFunc,
+    "unix_time" -> EvaluatorEngine.unixTimeFunc
   )
 
   override def binaryOperation = {
-    case (left: Value, i: Identifier, right: Value) if i.segments.tail.isEmpty && binaryOperators.contains(i.segments.head) ⇒
+    case (left: Value, i: Identifier, right: Value) if i.segments.tail.isEmpty && binaryOperators.contains(i.segments.head) =>
       binaryOperators(i.segments.head)(left,right)
   }
 
   def binaryOperationLeftArgument: PartialFunction[(Value, Identifier), Option[Value]] = {
-    case (left: Value, i: Identifier) if i.segments.tail.isEmpty && binaryOperatorsLeftArgument.contains(i.segments.head) ⇒
+    case (left: Value, i: Identifier) if i.segments.tail.isEmpty && binaryOperatorsLeftArgument.contains(i.segments.head) =>
       binaryOperatorsLeftArgument(i.segments.head)(left)
   }
 
   override def unaryOperation = {
-    case (i: Identifier, arg: Value) if i.segments.tail.isEmpty && unaryOperators.contains(i.segments.head) ⇒
+    case (i: Identifier, arg: Value) if i.segments.tail.isEmpty && unaryOperators.contains(i.segments.head) =>
       unaryOperators(i.segments.head)(arg)
   }
 
   override def function = {
-    case (i: Identifier, args: Seq[Value]) if i.segments.tail.isEmpty && functions.contains(i.segments.head) ⇒
+    case (i: Identifier, args: Seq[Value]) if i.segments.tail.isEmpty && functions.contains(i.segments.head) =>
       functions(i.segments.head)(args)
   }
 
@@ -105,8 +105,8 @@ object EvaluatorEngine {
   def andLeftBop(left: Value): Option[Value] = if (!left.toBoolean) Some(left) else None
 
   def hasBop(left: Value, right:Value): Boolean = right match {
-    case Lst(seq) ⇒ seq.forall(left.contains)
-    case other ⇒ left.contains(other)
+    case Lst(seq) => seq.forall(left.contains)
+    case other => left.contains(other)
   }
 
   def hasNotBop(left: Value, right:Value): Boolean = !hasBop(left, right)
@@ -136,11 +136,11 @@ object EvaluatorEngine {
   def isExistsFunc(arguments: Seq[Value]): Value = ??? // this is a special case, supported in ASTPlayer
 
   def lengthFunc(arguments: Seq[Value]): Value = {
-    arguments.foldLeft(0l)({
-      case (sum, Obj(o)) ⇒ sum + o.size
-      case (sum, Lst(l)) ⇒ sum + l.size
-      case (sum, Bool(b)) ⇒ sum + (if (b) 1 else 0)
-      case (sum, v: Value) ⇒ sum + v.toString.length
+    arguments.foldLeft(0L)({
+      case (sum, Obj(o)) => sum + o.size
+      case (sum, Lst(l)) => sum + l.size
+      case (sum, Bool(b)) => sum + (if (b) 1 else 0)
+      case (sum, v: Value) => sum + v.toString.length
     })
   }
 
@@ -169,9 +169,9 @@ object EvaluatorEngine {
 
     val index = arguments.tail.head.toInt
     arguments.head match {
-      case Lst(l) ⇒ l(index)
-      case Obj(m) ⇒ m(m.keys.toVector(index))
-      case s ⇒ s.toString.charAt(index).toString
+      case Lst(l) => l(index)
+      case Obj(m) => m(m.keys.toVector(index))
+      case s => s.toString.charAt(index).toString
     }
   }
 

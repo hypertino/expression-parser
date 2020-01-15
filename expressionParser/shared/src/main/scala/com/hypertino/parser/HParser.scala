@@ -3,7 +3,7 @@ package com.hypertino.parser
 import java.math.BigInteger
 
 import com.hypertino.binders.value.Text
-import com.hypertino.binders.{value ⇒ bn}
+import com.hypertino.binders.{value => bn}
 import com.hypertino.parser.ast._
 import org.parboiled2.{CharPredicate, Parser, ParserInput, StringBuilding, _}
 
@@ -21,7 +21,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def Literal = rule { WhiteSpace ~ Value }
 
   def Object: Rule1[bn.Obj] = rule {
-    ws('{') ~ zeroOrMore(Pair).separatedBy(ws(',')) ~ ws('}') ~> ((fields: Seq[(String,bn.Value)]) ⇒ bn.Obj.from(fields :_*))
+    ws('{') ~ zeroOrMore(Pair).separatedBy(ws(',')) ~ ws('}') ~> ((fields: Seq[(String,bn.Value)]) => bn.Obj.from(fields :_*))
   }
 
   def Pair = rule { StringUnwrapped ~ ws(':') ~ Value ~> ((_, _)) }
@@ -29,15 +29,15 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def Value: Rule1[bn.Value] = rule {
     run {
       (cursorChar: @switch) match {
-        case '"' ⇒ String
-        case '\'' ⇒ StringNoEscapes
-        case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' ⇒ Number
-        case '{' ⇒ Object
-        case '[' ⇒ List
-        case 't' ⇒ True
-        case 'f' ⇒ False
-        case 'n' ⇒ Null
-        case _ ⇒ MISMATCH
+        case '"' => String
+        case '\'' => StringNoEscapes
+        case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '-' => Number
+        case '{' => Object
+        case '[' => List
+        case 't' => True
+        case 'f' => False
+        case 'n' => Null
+        case _ => MISMATCH
       }
     }
   }
@@ -52,9 +52,9 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
 
   def Number = rule { HexNumber | DecNumber }
 
-  def HexNumber = rule { ignoreCase("0x") ~ capture(oneOrMore(HexDigit)) ~> (s ⇒ bn.Number(BigDecimal(new BigInteger(s, 16)))) ~ WhiteSpace }
+  def HexNumber = rule { ignoreCase("0x") ~ capture(oneOrMore(HexDigit)) ~> (s => bn.Number(BigDecimal(new BigInteger(s, 16)))) ~ WhiteSpace }
 
-  def DecNumber = rule { capture(Integer ~ optional(Frac) ~ optional(Exp)) ~> (s ⇒ bn.Number(BigDecimal(s))) ~ WhiteSpace }
+  def DecNumber = rule { capture(Integer ~ optional(Frac) ~ optional(Exp)) ~> (s => bn.Number(BigDecimal(s))) ~ WhiteSpace }
 
   def List = rule { ws('[') ~ zeroOrMore(Value).separatedBy(ws(',')) ~ ws(']') ~> (bn.Lst.from(_ :_*)) }
 
@@ -71,7 +71,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
       | 'n' ~ appendSB('\n')
       | 'r' ~ appendSB('\r')
       | 't' ~ appendSB('\t')
-      | Unicode ~> { code ⇒ sb.append(code.asInstanceOf[Char]); () }
+      | Unicode ~> { code => sb.append(code.asInstanceOf[Char]); () }
   )
 
   def Unicode = rule { 'u' ~ capture(HexDigit ~ HexDigit ~ HexDigit ~ HexDigit) ~> (java.lang.Integer.parseInt(_, 16)) }
@@ -102,7 +102,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def CharExceptQuoteDollar = rule { !QuoteDollar ~ ANY ~ appendSB() }
   def InterpolationStringChars = rule { CharExceptQuoteDollar | "$$" ~ appendSB("$") }
   def InterpolationExpression = rule { "${" ~ Expression ~ '}' | "$" ~ IdentNoWhitespace }
-  def InterpolationString = rule { clearSB() ~ oneOrMore(InterpolationStringChars) ~ push(sb.toString) ~> (s ⇒ Constant(Text(s))) }
+  def InterpolationString = rule { clearSB() ~ oneOrMore(InterpolationStringChars) ~ push(sb.toString) ~> (s => Constant(Text(s))) }
   def Interpolation = rule { "s\"" ~ oneOrMore(InterpolationString | InterpolationExpression) ~ ws('"') ~> StringInterpolation }
 
   // identifiers
@@ -119,7 +119,7 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
   def ConstructIdentifier(firstSegment: String, subSegments: Seq[String]) = Identifier(Seq(firstSegment) ++ subSegments)
 
   def FuncArgs = rule { Expression ~ zeroOrMore(',' ~ Expression) ~> (Seq(_) ++ _)}
-  def Func = rule { Ident ~ '(' ~ WhiteSpace ~ optional (FuncArgs) ~ ')' ~ WhiteSpace ~> {(i:Identifier,e:Option[Seq[Expression]]) ⇒ {com.hypertino.parser.ast.Function(i,e.getOrElse(Seq.empty))}}}
+  def Func = rule { Ident ~ '(' ~ WhiteSpace ~ optional (FuncArgs) ~ ')' ~ WhiteSpace ~> {(i:Identifier,e:Option[Seq[Expression]]) => {com.hypertino.parser.ast.Function(i,e.getOrElse(Seq.empty))}}}
 
   def UnaryOps = rule { capture ( CharPredicate("!-") ) ~ WhiteSpace ~> OpIdentifier _ }
   def OpIdentifier(name: String) = Identifier(name)
@@ -134,9 +134,9 @@ class HParser(val input: ParserInput) extends Parser with StringBuilding {
     rule { capture("=" | "!=") ~> OpIdentifier _ },
     rule { capture("<=" | "<" | ">=" | ">") ~> OpIdentifier _ },
     rule {
-      { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~> (_ ⇒ OpIdentifier("has not")) } |
+      { capture("has" ~ oneOrMore(WhiteSpaceChar) ~ "not") ~> (_ => OpIdentifier("has not")) } |
       { capture("has") ~> OpIdentifier _ } |
-      { capture("not" ~ oneOrMore(WhiteSpaceChar) ~ "like") ~> (_ ⇒ OpIdentifier("not like")) } |
+      { capture("not" ~ oneOrMore(WhiteSpaceChar) ~ "like") ~> (_ => OpIdentifier("not like")) } |
       { capture("like") ~> OpIdentifier _ }
     }
 
@@ -186,10 +186,10 @@ object HParser {
   def apply(input: ParserInput, operators: Seq[String]): Expression = {
     val parser = new HParser(input) {
       override def customOperators = {
-        operators.foldLeft(Vector.newBuilder[Rule1[Identifier]]) { (ops, op) ⇒
+        operators.foldLeft(Vector.newBuilder[Rule1[Identifier]]) { (ops, op) =>
           val opByWhiteSpaces = op.split(" ")
           var isFirst = true
-          val operationRule = opByWhiteSpaces.foldLeft(WhiteSpace) { (currentRule, segment) ⇒
+          val operationRule = opByWhiteSpaces.foldLeft(WhiteSpace) { (currentRule, segment) =>
             if (isFirst) {
               isFirst = false
               rule { currentRule ~ segment }
@@ -197,19 +197,19 @@ object HParser {
               rule { currentRule ~ oneOrMore(WhiteSpaceChar) ~ segment }
             }
           }
-          ops += rule { capture(operationRule) ~ WhiteSpace ~> ((_:String) ⇒ Identifier(op)) }
+          ops += rule { capture(operationRule) ~ WhiteSpace ~> ((_:String) => Identifier(op)) }
         }.result()
       }
     }
     run(parser, parser.InputLine.run())
   }
 
-  private def run(parser: Parser, runParser: ⇒ Try[ast.Expression]): Expression = {
+  private def run(parser: Parser, runParser: => Try[ast.Expression]): Expression = {
     runParser match {
-      case Success(e) ⇒ e
-      case Failure(pe : ParseError) ⇒
+      case Success(e) => e
+      case Failure(pe : ParseError) =>
         throw HParseError(pe.format(parser), pe)
-      case Failure(f) ⇒
+      case Failure(f) =>
         throw f
     }
   }

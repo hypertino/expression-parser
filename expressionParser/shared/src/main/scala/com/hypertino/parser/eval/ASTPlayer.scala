@@ -10,21 +10,21 @@ trait ASTPlayer {
 
   def play(rootExpression: Expression): Value = {
     rootExpression match {
-      case Constant(value) ⇒ value
-      case i : Identifier ⇒
+      case Constant(value) => value
+      case i : Identifier =>
         if (evaluator.identifier.isDefinedAt(i))
           evaluator.identifier(i)
         else
           unknownIdentifier(i)
 
-      case UnaryOperation(operation, argument) ⇒
+      case UnaryOperation(operation, argument) =>
         val eArg = play(argument)
         if (evaluator.unaryOperation.isDefinedAt(operation, eArg))
           evaluator.unaryOperation(operation, eArg)
         else
           unknownUnaryOperation(operation, eArg)
 
-      case BinaryOperation(left, operation, right) ⇒
+      case BinaryOperation(left, operation, right) =>
         val eLeft = play(left)
 
         val resultBasedOnLeft = if (evaluator.binaryOperationLeftArgument.isDefinedAt(eLeft, operation)) {
@@ -40,14 +40,14 @@ trait ASTPlayer {
             unknownBinaryOperation(eLeft, operation, eRight)
         }
 
-      case Function(functionIdentifier, arguments) ⇒
+      case Function(functionIdentifier, arguments) =>
         // special case
         if (functionIdentifier.segments.head == "exists" && functionIdentifier.segments.tail.isEmpty ) {
           try {
             arguments.map(play)
             True
           } catch {
-            case NonFatal(e) ⇒
+            case NonFatal(e) =>
               False
           }
         }
@@ -59,7 +59,7 @@ trait ASTPlayer {
             unknownFunction(functionIdentifier, eArgs)
         }
 
-      case StringInterpolation(arguments) ⇒
+      case StringInterpolation(arguments) =>
         Text(arguments.map(play).mkString)
     }
   }

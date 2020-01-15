@@ -15,10 +15,10 @@ trait HFormatter extends ASTPlayer {
 
   private def format(e: Expression, sb: StringBuilder): Unit = {
     e match {
-      case Constant(value) ⇒
+      case Constant(value) =>
         appendEscaped(value, sb)
 
-      case Identifier(segments) ⇒
+      case Identifier(segments) =>
         val it = segments.toIterator
         while (it.hasNext) {
           val s = it.next()
@@ -33,18 +33,18 @@ trait HFormatter extends ASTPlayer {
           }
         }
 
-      case UnaryOperation(operation, argument) ⇒
+      case UnaryOperation(operation, argument) =>
         sb.append(operation.segments.head)
         formatAndWrap(argument, sb)
 
-      case BinaryOperation(left, operation, right) ⇒
+      case BinaryOperation(left, operation, right) =>
         formatAndWrap(left, sb)
         sb.append(" ")
         sb.append(operation.segments.head)
         sb.append(" ")
         formatAndWrap(right, sb)
 
-      case Function(functionIdentifier, arguments) ⇒
+      case Function(functionIdentifier, arguments) =>
         format(functionIdentifier, sb)
         sb.append("(")
         val it = arguments.toIterator
@@ -56,13 +56,13 @@ trait HFormatter extends ASTPlayer {
         }
         sb.append(")")
 
-      case StringInterpolation(arguments) ⇒
+      case StringInterpolation(arguments) =>
         sb.append("s\"")
         arguments.foreach {
-          case Constant(Text(s)) ⇒
+          case Constant(Text(s)) =>
             sb.append(s.replace("$", "$$"))
 
-          case other ⇒
+          case other =>
             sb.append("${")
             format(other, sb)
             sb.append("}")
@@ -73,10 +73,10 @@ trait HFormatter extends ASTPlayer {
 
   private def formatAndWrap(e: Expression, sb: StringBuilder): Unit = {
     e match {
-      case _: Constant | _: Identifier | _: StringInterpolation ⇒
+      case _: Constant | _: Identifier | _: StringInterpolation =>
         format(e, sb)
 
-      case other ⇒
+      case other =>
         sb.append("(")
         format(e, sb)
         sb.append(")")
@@ -85,33 +85,33 @@ trait HFormatter extends ASTPlayer {
 
   private def appendEscaped(v: Value, sb: StringBuilder): Unit = {
     v match {
-      case Text(s) ⇒
+      case Text(s) =>
         sb.append('"')
         s.foreach {
-          case '"' ⇒ sb.append("\\\"")
-          case '\\' ⇒ sb.append("\\")
-          case '\b' ⇒ sb.append("\\b")
-          case '\f' ⇒ sb.append("\\f")
-          case '\n' ⇒ sb.append("\\n")
-          case '\r' ⇒ sb.append("\\r")
-          case '\t' ⇒ sb.append("\\t")
-          case c if Character.isISOControl(c) ⇒
+          case '"' => sb.append("\\\"")
+          case '\\' => sb.append("\\")
+          case '\b' => sb.append("\\b")
+          case '\f' => sb.append("\\f")
+          case '\n' => sb.append("\\n")
+          case '\r' => sb.append("\\r")
+          case '\t' => sb.append("\\t")
+          case c if Character.isISOControl(c) =>
             sb.append("\\u")
             sb.append(c.toHexString)
-          case c ⇒ sb.append(c)
+          case c => sb.append(c)
         }
         sb.append('"')
 
-      case Number(n) ⇒
+      case Number(n) =>
         sb.append(n.toString)
 
-      case Bool(b) ⇒
+      case Bool(b) =>
         sb.append(b.toString)
 
-      case Null ⇒
+      case Null =>
         sb.append("null")
 
-      case Obj(els) ⇒
+      case Obj(els) =>
         sb.append("{")
         val it = els.toIterator
         while (it.hasNext) {
@@ -125,7 +125,7 @@ trait HFormatter extends ASTPlayer {
         }
         sb.append("}")
 
-      case Lst(els) ⇒
+      case Lst(els) =>
         sb.append("[")
         val it = els.toIterator
         while (it.hasNext) {

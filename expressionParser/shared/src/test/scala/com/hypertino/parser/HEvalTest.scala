@@ -3,9 +3,10 @@ package com.hypertino.parser
 import com.hypertino.binders.value.{False, Lst, Number, Obj, Text, True, Value}
 import com.hypertino.parser.ast.Identifier
 import com.hypertino.parser.eval.{EvalEntityNotFound, EvalFunctionNotFound, ValueContext}
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class HEvalTest extends FreeSpec with Matchers {
+class HEvalTest extends AnyFreeSpec with Matchers {
   "HEval" - {
     "math" in {
       val result = HEval("4*5+3*2")
@@ -13,7 +14,7 @@ class HEvalTest extends FreeSpec with Matchers {
     }
 
     "math with variables" in {
-      val context = Obj.from("x" → 100)
+      val context = Obj.from("x" -> 100)
       val result = HEval("4*x+3*2", context)
       result shouldBe Number(406)
     }
@@ -25,7 +26,7 @@ class HEvalTest extends FreeSpec with Matchers {
     }
 
     "math with inner variables" in {
-      val context = Obj.from("data" → Obj.from("x" → 10))
+      val context = Obj.from("data" -> Obj.from("x" -> 10))
       val result = HEval("4*data.x+1*2", context)
       result shouldBe Number(42)
     }
@@ -92,7 +93,7 @@ class HEvalTest extends FreeSpec with Matchers {
     "custom function test" in {
       val context = new ValueContext(Obj.empty) {
         override def function: PartialFunction[(Identifier, Seq[Value]), Value] = {
-          case (Identifier(Seq("pow")), args) ⇒ args.head.toBigDecimal.pow(args.tail.head.toInt)
+          case (Identifier(Seq("pow")), args) => args.head.toBigDecimal.pow(args.tail.head.toInt)
         }
       }
 
@@ -106,15 +107,15 @@ class HEvalTest extends FreeSpec with Matchers {
     }
 
     "string interpolation" in {
-      val context = Obj.from("id" → 100500, "name" → "John")
+      val context = Obj.from("id" -> 100500, "name" -> "John")
       HEval("s\"user id is: $id\"", context) shouldBe Text("user id is: 100500")
       HEval("s\"user name is: ${name}\"", context) shouldBe Text("user name is: John")
     }
 
     "parse unix-time functions" in {
-      HEval("parse_unix_time('2001-07-04T12:08:56.235-0700')") shouldBe Number(994273736235l)
-      HEval("parse_unix_time('2001-07-04','yyyy-MM-dd','+0002')") shouldBe Number(994204800000l)
-      HEval("parse_unix_time('04-07-2001','dd-MM-yyyy','+0002')") shouldBe Number(994204800000l)
+      HEval("parse_unix_time('2001-07-04T12:08:56.235-0700')") shouldBe Number(994273736235L)
+      HEval("parse_unix_time('2001-07-04','yyyy-MM-dd','+0002')") shouldBe Number(994204800000L)
+      HEval("parse_unix_time('04-07-2001','dd-MM-yyyy','+0002')") shouldBe Number(994204800000L)
     }
 
     "format unix-time functions" in {
