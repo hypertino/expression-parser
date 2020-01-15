@@ -17,7 +17,7 @@ lazy val expressionParser = crossProject(JSPlatform, JVMPlatform)
   .settings(
     crossScalaVersions := supportedScalaVersions,
     name := "expression-parser",
-    version := "0.2-SNAPSHOT",
+    version := "0.3-SNAPSHOT",
     libraryDependencies ++= Seq(
       "com.hypertino"   %%% "binders"        % "1.3.0",
       "org.parboiled"   %%% "parboiled"      % "2.1.8",
