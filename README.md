@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/hypertino/expression-parser.svg)](https://travis-ci.org/hypertino/expression-parser)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.hypertino/binders_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.hypertino/expression-parser_2.12)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.hypertino/expression-parser_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.hypertino/expression-parser_2.13)
 
 # About
 This is a ready to use expression parser and evaluator for Scala powered by `parboiled2`.
@@ -99,3 +99,21 @@ val result = HEval("pow(2,8)", context).toInt
  (user.isDefined) and (user.roles has "qa")) 
  (!user.isDefined) or (user.roles has "admin")
  ```
+
+# Download
+
+```sbt
+libraryDependencies += "com.hypertino" %% "expression-parser" % "0.3.0"
+```
+Releases published to Maven Central for Scala 2.11 - 2.13 JVM & JS (user `%%%` for Scala.js enabled projects)
+
+Snapshots live in Sonatype repository, include it additionally:
+```sbt
+resolvers ++= Seq(
+  Resolver.sonatypeRepo("public")
+)
+```
+
+# License
+
+library is available under the BSD 3-Clause License
