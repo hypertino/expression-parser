@@ -1,65 +1,91 @@
-crossScalaVersions := Seq("2.12.3", "2.11.11")
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
-scalaVersion := crossScalaVersions.value.head
+lazy val scala213 = "2.13.1"
+lazy val scala212 = "2.12.10"
+lazy val scala211 = "2.11.12"
+lazy val supportedScalaVersions = List(scala213, scala212, scala211)
 
-organization := "com.hypertino"
+ThisBuild / scalaVersion := scala213
 
-name := "expression-parser"
+ThisBuild / organization := "com.hypertino"
 
-version := "0.2-SNAPSHOT"
+ThisBuild / scalacOptions ++= Seq("-feature", "-deprecation")
 
-libraryDependencies ++= Seq(
-  "com.hypertino"   %% "binders"        % "1.2.0",
-  "org.parboiled"   %% "parboiled"      % "2.1.4",
-  "org.scalamock"   %% "scalamock-scalatest-support" % "3.5.0" % "test"
+lazy val expressionParser = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Full)
+  .settings(publishSettings:_*)
+  .settings(
+    crossScalaVersions := supportedScalaVersions,
+    name := "expression-parser",
+    version := "0.2-SNAPSHOT",
+    libraryDependencies ++= Seq(
+      "com.hypertino"   %%% "binders"        % "1.3.0",
+      "org.parboiled"   %%% "parboiled"      % "2.1.8",
+      "org.scalamock" %%% "scalamock" % "4.4.0" % Test,
+      "org.scalatest" %% "scalatest" % "3.1.0" % Test
+    ),
+    publishArtifact := true,
+    publishArtifact in Test := false,
+    resolvers ++= Seq(
+      Resolver.sonatypeRepo("public")
+    )
+  )
+  .jsSettings(
+  )
+  .jvmSettings(
+  )
+
+lazy val js = expressionParser.js
+
+lazy val jvm = expressionParser.jvm
+
+lazy val `expressionParserRoot` = project.settings(publishSettings:_*).in(file("."))
+  .settings(publishSettings:_*)
+  .aggregate(js, jvm)
+  .settings(
+    crossScalaVersions := Nil,
+    publish / skip := true
+  )
+
+val publishSettings = Seq(
+  pomExtra := <url>https://github.com/hypertino/expression-parser</url>
+    <licenses>
+      <license>
+        <name>BSD-style</name>
+        <url>http://opensource.org/licenses/BSD-3-Clause</url>
+        <distribution>repo</distribution>
+      </license>
+    </licenses>
+    <scm>
+      <url>git@github.com:hypertino/expression-parser.git</url>
+      <connection>scm:git:git@github.com:hypertino/expression-parser.git</connection>
+    </scm>
+    <developers>
+      <developer>
+        <id>maqdev</id>
+        <name>Magomed Abdurakhmanov</name>
+        <url>https://github.com/maqdev</url>
+      </developer>
+      <developer>
+        <id>hypertino</id>
+        <name>Hypertino</name>
+        <url>https://github.com/hypertino</url>
+      </developer>
+    </developers>,
+  publishMavenStyle := true,
+  pomIncludeRepository := { _ => false},
+  publishTo := {
+    val nexus = "https://oss.sonatype.org/"
+    if (isSnapshot.value)
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  }
 )
 
-resolvers ++= Seq(
-  Resolver.sonatypeRepo("public")
-)
-
-pomExtra := <url>https://github.com/hypertino/expression-parser</url>
-  <licenses>
-    <license>
-      <name>BSD-style</name>
-      <url>http://opensource.org/licenses/BSD-3-Clause</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <scm>
-    <url>git@github.com:hypertino/expression-parser.git</url>
-    <connection>scm:git:git@github.com:hypertino/expression-parser.git</connection>
-  </scm>
-  <developers>
-    <developer>
-      <id>maqdev</id>
-      <name>Magomed Abdurakhmanov</name>
-      <url>https://github.com/maqdev</url>
-    </developer>
-    <developer>
-      <id>hypertino</id>
-      <name>Hypertino</name>
-      <url>https://github.com/hypertino</url>
-    </developer>
-  </developers>
-
-pgpSecretRing := file("./travis/script/ht-oss-private.asc")
-pgpPublicRing := file("./travis/script/ht-oss-public.asc")
-usePgpKeyHex("F8CDEF49B0EDEDCC")
-pgpPassphrase := Option(System.getenv().get("oss_gpg_passphrase")).map(_.toCharArray)
-publishMavenStyle := true
-pomIncludeRepository := { _ => false}
-publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (isSnapshot.value)
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-}
-credentials ++= (for {
-  username <- Option(System.getenv().get("sonatype_username"))
-  password <- Option(System.getenv().get("sonatype_password"))
-} yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq
-
-publishArtifact in Test := false
-scalacOptions in Global ++= Seq("-feature", "-deprecation")
+Global / pgpPassphrase := Option(System.getenv().get("oss_gpg_passphrase")).map(_.toCharArray)
+Global / credentials ++= Seq(
+    Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", System.getenv().get("sonatype_username"), System.getenv().get("sonatype_password")),
+  )
+Global / useGpgAgent := false
+usePgpKeyHex("97A4EB3D60277A26D5B5480BA53DC2FF4858319D")

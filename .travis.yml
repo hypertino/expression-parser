@@ -1,14 +1,15 @@
 language: scala
 
 scala:
-  - 2.12.3
-  - 2.11.11
+  - "2.13.1"
+  - "2.12.10"
+  - "2.11.12"
 
 sudo: false
 script: $TRAVIS_BUILD_DIR/travis/script/build.sh
 
 jdk:
-  - oraclejdk8
+  - oraclejdk13
 
 cache:
   directories:
@@ -18,6 +19,7 @@ cache:
 
 git:
   submodules: false
+
 before_install:
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
   - git submodule update --init --recursive
