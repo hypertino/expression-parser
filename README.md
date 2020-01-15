@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/hypertino/expression-parser.svg)](https://travis-ci.org/hypertino/expression-parser)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.hypertino/expression-parser_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.hypertino/expression-parser_2.13)
 
+[ Latest releases and snapshots](https://oss.sonatype.org/#nexus-search;gav~com.hypertino~expression-parser_*~~~)
+
 # About
 This is a ready to use expression parser and evaluator for Scala powered by `parboiled2`.
 
